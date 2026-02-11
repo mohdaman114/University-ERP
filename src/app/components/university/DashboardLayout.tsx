@@ -293,8 +293,7 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Examinations', icon: FileText, page: 'examinations' },
     { name: 'Results', icon: FileText, page: 'results' },
     { name: 'Fees', icon: DollarSign, page: 'fees' },
-    { name: 'Library', icon: Library, page: 'library' },
-    { name: 'Study Materials', icon: BookOpen, page: 'materials' },
+    { name: 'Notice', icon: FileText, page: 'notice' },
   ],
   faculty: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
@@ -415,9 +414,9 @@ export function DashboardLayout({ children, currentPage, onPageChange }: Dashboa
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onPageChange('profile')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={logout} className="text-red-600">
