@@ -1,5 +1,7 @@
 const students = [
   {
+    name: 'Priya Sharma',
+    email: 'priya.sharma@example.com',
     studentId: 'STU001',
     enrollmentNumber: 'ENR001',
     dateOfBirth: '2002-05-15',

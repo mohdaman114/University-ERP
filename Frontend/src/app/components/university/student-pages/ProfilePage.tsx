@@ -52,8 +52,14 @@ export function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setProfileData((prevData) => (prevData ? { ...prevData, [name]: value } : null));
+    const { name, value, type } = e.target;
+    setProfileData((prevData) => {
+      if (!prevData) return null;
+      return {
+        ...prevData,
+        [name]: type === 'number' ? parseInt(value) || 0 : value,
+      };
+    });
   };
 
   const handleSave = async () => {
@@ -166,7 +172,7 @@ export function ProfilePage() {
               type="email"
               value={profileData.email}
               onChange={handleChange}
-              disabled={true} // Email is often not editable directly by user
+              disabled={!isEditing}
             />
             <Input
               label="Student ID"

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const studentSchema = mongoose.Schema(
+const facultySchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,17 +16,20 @@ const studentSchema = mongoose.Schema(
       required: true,
       unique: true,
     },
-    studentId: {
+    facultyId: {
       type: String,
       required: true,
       unique: true,
     },
-    enrollmentNumber: {
+    designation: {
       type: String,
       required: true,
-      unique: true,
     },
-    dateOfBirth: {
+    department: {
+      type: String,
+      required: true,
+    },
+    dateOfJoining: {
       type: Date,
       required: true,
     },
@@ -43,30 +46,13 @@ const studentSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    parentName: {
+    qualification: {
       type: String,
       required: true,
     },
-    parentPhoneNumber: {
+    experience: {
       type: String,
       required: true,
-    },
-    course: {
-      type: String,
-      required: true,
-    },
-    branch: {
-      type: String,
-      required: true,
-    },
-    admissionYear: {
-      type: Number,
-      required: true,
-    },
-    currentSemester: {
-      type: Number,
-      required: true,
-      default: 1,
     },
     profilePicture: {
       type: String,
@@ -78,6 +64,6 @@ const studentSchema = mongoose.Schema(
   }
 );
 
-const Student = mongoose.model('Student', studentSchema);
+const Faculty = mongoose.model('Faculty', facultySchema);
 
-module.exports = Student;
+module.exports = Faculty;

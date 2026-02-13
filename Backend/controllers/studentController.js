@@ -6,30 +6,36 @@ const User = require('../models/User');
 // @route   GET /api/students/profile
 // @access  Private (Student)
 const getStudentProfile = asyncHandler(async (req, res) => {
-  const student = await Student.findOne({ user: req.user._id }).populate('user', 'name email role');
+  try {
+    const student = await Student.findOne({ user: req.user._id }).populate('user', 'name email role');
 
-  if (student) {
-    res.json({
-      _id: student._id,
-      name: student.user.name,
-      email: student.user.email,
-      studentId: student.studentId,
-      enrollmentNumber: student.enrollmentNumber,
-      dateOfBirth: student.dateOfBirth,
-      gender: student.gender,
-      address: student.address,
-      phoneNumber: student.phoneNumber,
-      parentName: student.parentName,
-      parentPhoneNumber: student.parentPhoneNumber,
-      course: student.course,
-      branch: student.branch,
-      admissionYear: student.admissionYear,
-      currentSemester: student.currentSemester,
-      profilePicture: student.profilePicture,
-    });
-  } else {
-    res.status(404);
-    throw new Error('Student profile not found');
+    if (student) {
+      res.json({
+        _id: student._id,
+        name: student.name || (student.user ? student.user.name : ''),
+        email: student.email || (student.user ? student.user.email : ''),
+        studentId: student.studentId,
+        enrollmentNumber: student.enrollmentNumber,
+        dateOfBirth: student.dateOfBirth,
+        gender: student.gender,
+        address: student.address,
+        phoneNumber: student.phoneNumber,
+        parentName: student.parentName,
+        parentPhoneNumber: student.parentPhoneNumber,
+        course: student.course,
+        branch: student.branch,
+        admissionYear: student.admissionYear,
+        currentSemester: student.currentSemester,
+        profilePicture: student.profilePicture,
+      });
+    } else {
+      res.status(404);
+      throw new Error('Student profile not found');
+    }
+  } catch (error) {
+    console.error('Error in getStudentProfile:', error);
+    res.status(res.statusCode === 200 ? 500 : res.statusCode);
+    throw error;
   }
 });
 
@@ -45,20 +51,37 @@ const updateStudentProfile = asyncHandler(async (req, res) => {
   if (student) {
     console.log('Student found:', student._id); // Log if student is found
     // Update User model fields if they are sent
-    if (req.body.name && student.user) {
-      console.log('Attempting to update User name.');
+    if (student.user) {
       const user = await User.findById(student.user);
       if (user) {
-        console.log('User found for name update:', user._id);
-        user.name = req.body.name;
-        await user.save();
-        console.log('User name updated successfully to:', user.name);
-      } else {
-        console.log('User not found for name update with ID:', student.user._id);
+        let userUpdated = false;
+        if (req.body.name) {
+          user.name = req.body.name;
+          userUpdated = true;
+        }
+        if (req.body.email) {
+          user.email = req.body.email;
+          userUpdated = true;
+        }
+        
+        if (userUpdated) {
+          try {
+            await user.save();
+            console.log('User updated successfully');
+          } catch (userSaveError) {
+            console.error('Error saving user:', userSaveError);
+            res.status(500);
+            throw new Error('Failed to save user: ' + userSaveError.message);
+          }
+        }
       }
     }
 
     console.log('Updating student fields...');
+    student.studentId = req.body.studentId || student.studentId;
+    student.enrollmentNumber = req.body.enrollmentNumber || student.enrollmentNumber;
+    student.name = req.body.name || student.name;
+    student.email = req.body.email || student.email;
     student.gender = req.body.gender || student.gender;
     student.address = req.body.address || student.address;
     student.phoneNumber = req.body.phoneNumber || student.phoneNumber;
@@ -83,8 +106,8 @@ const updateStudentProfile = asyncHandler(async (req, res) => {
 
       res.json({
         _id: updatedStudent._id,
-        name: updatedStudent.user.name,
-        email: updatedStudent.user.email,
+        name: updatedStudent.name || (updatedStudent.user ? updatedStudent.user.name : ''),
+        email: updatedStudent.email || (updatedStudent.user ? updatedStudent.user.email : ''),
         studentId: updatedStudent.studentId,
         enrollmentNumber: updatedStudent.enrollmentNumber,
         dateOfBirth: updatedStudent.dateOfBirth,

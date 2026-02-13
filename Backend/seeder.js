@@ -1,51 +1,66 @@
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const users = require('./data/users');
 const students = require('./data/students');
+const faculty = require('./data/faculty');
 const User = require('./models/User');
 const Student = require('./models/Student');
+const Faculty = require('./models/Faculty');
 const connectDB = require('./config/db');
 
 dotenv.config();
 
-connectDB();
-
 const importData = async () => {
   try {
+    await connectDB();
+
+    // Clear existing data
     await User.deleteMany();
     await Student.deleteMany();
+    await Faculty.deleteMany();
 
+    // Create users one by one to trigger 'pre-save' hashing in User model
     const createdUsers = [];
     for (const user of users) {
-      const newUser = new User(user);
-      await newUser.save();
+      const newUser = await User.create(user);
       createdUsers.push(newUser);
     }
 
-    const studentUser = createdUsers[0]._id;
+    const adminUser = createdUsers.find(u => u.role === 'admin')._id;
+    const studentUser = createdUsers.find(u => u.role === 'student')._id;
+    const facultyUser = createdUsers.find(u => u.role === 'faculty')._id;
 
     const sampleStudents = students.map((student) => {
       return { ...student, user: studentUser };
     });
 
-    await Student.insertMany(sampleStudents);
+    const sampleFaculty = faculty.map((f) => {
+      return { ...f, user: facultyUser };
+    });
 
-    console.log('Data Imported!');
+    await Student.insertMany(sampleStudents);
+    await Faculty.insertMany(sampleFaculty);
+
+    console.log('✅ Data Imported Successfully!');
     process.exit();
   } catch (error) {
-    console.error(`${error}`);
+    console.error(`❌ Error: ${error.message}`);
     process.exit(1);
   }
 };
 
 const destroyData = async () => {
   try {
+    await connectDB();
+
     await User.deleteMany();
     await Student.deleteMany();
+    await Faculty.deleteMany();
 
-    console.log('Data Destroyed!');
+    console.log('🗑️ Data Destroyed!');
     process.exit();
   } catch (error) {
-    console.error(`${error}`);
+    console.error(`❌ Error: ${error.message}`);
     process.exit(1);
   }
 };
