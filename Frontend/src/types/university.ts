@@ -22,6 +22,19 @@ export interface User {
   employeeId?: string; // for faculty/staff
 }
 
+// Accountant
+export interface Accountant extends User {
+  accountantId: string;
+  designation: string;
+  department: string;
+  dateOfJoining: string;
+  gender: 'Male' | 'Female' | 'Other';
+  address?: string;
+  phoneNumber?: string;
+  qualification?: string;
+  experience?: string;
+}
+
 // Department
 export interface Department {
   id: string;
@@ -163,7 +176,7 @@ export interface Notice {
   content: string;
   category: 'general' | 'academic' | 'examination' | 'event' | 'urgent';
   publishedBy: string;
-  publishedDate: string;
+  date: string; // Changed from publishedDate
   expiryDate?: string;
   targetRoles: UserRole[];
   attachments?: string[];
@@ -199,7 +212,7 @@ export interface AnalyticsData {
   totalFaculty: number;
   totalDepartments: number;
   totalCourses: number;
-  averageAttendance: number;
+  totalAccountant: number;
   totalRevenue: number;
   pendingFees: number;
   totalBooks: number;

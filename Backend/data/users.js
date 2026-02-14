@@ -1,8 +1,8 @@
 const users = [
   {
     name: 'Admin User',
-    email: 'admin@example.com',
-    password: 'password123',
+    email: 'admin@ac.in',
+    password: 'admin123',
     role: 'admin',
   },
   {
@@ -16,6 +16,12 @@ const users = [
     email: 'ramesh.kumar@example.com',
     password: 'password123',
     role: 'faculty',
+  },
+  {
+    name: 'Mr. Sanjay Gupta',
+    email: 'sanjay.gupta@example.com',
+    password: 'password123',
+    role: 'accountant',
   },
 ];
 

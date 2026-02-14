@@ -274,16 +274,18 @@ interface DashboardLayoutProps {
 const navigationByRole: Record<UserRole, { name: string; icon: any; page: string }[]> = {
   super_admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
-    { name: 'User Management', icon: Users, page: 'users' },
-    { name: 'Departments', icon: BookOpen, page: 'departments' },
+    { name: 'Students', icon: Users, page: 'students' },
+    { name: 'Faculty', icon: GraduationCap, page: 'faculty' },
+    { name: 'Accountants', icon: DollarSign, page: 'accountants' },
     { name: 'Courses', icon: BookOpen, page: 'courses' },
     { name: 'Notices', icon: FileText, page: 'notices' },
     { name: 'Analytics', icon: LayoutDashboard, page: 'analytics' },
   ],
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
-    { name: 'User Management', icon: Users, page: 'users' },
-    { name: 'Departments', icon: BookOpen, page: 'departments' },
+    { name: 'Students', icon: Users, page: 'students' },
+    { name: 'Faculty', icon: GraduationCap, page: 'faculty' },
+    { name: 'Accountants', icon: DollarSign, page: 'accountants' },
     { name: 'Notices', icon: FileText, page: 'notices' },
   ],
   student: [

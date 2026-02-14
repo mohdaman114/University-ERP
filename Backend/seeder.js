@@ -3,12 +3,14 @@ const dotenv = require('dotenv');
 const users = require('./data/users');
 const students = require('./data/students');
 const faculty = require('./data/faculty');
+const accountants = require('./data/accountants');
 const User = require('./models/User');
 const Student = require('./models/Student');
 const Faculty = require('./models/Faculty');
+const Accountant = require('./models/Accountant');
 const connectDB = require('./config/db');
 
-dotenv.config();
+dotenv.config({ path: './Erp System/Backend/.env' });
 
 const importData = async () => {
   try {
@@ -18,6 +20,7 @@ const importData = async () => {
     await User.deleteMany();
     await Student.deleteMany();
     await Faculty.deleteMany();
+    await Accountant.deleteMany();
 
     // Create users one by one to trigger 'pre-save' hashing in User model
     const createdUsers = [];
@@ -29,6 +32,7 @@ const importData = async () => {
     const adminUser = createdUsers.find(u => u.role === 'admin')._id;
     const studentUser = createdUsers.find(u => u.role === 'student')._id;
     const facultyUser = createdUsers.find(u => u.role === 'faculty')._id;
+    const accountantUser = createdUsers.find(u => u.role === 'accountant')._id;
 
     const sampleStudents = students.map((student) => {
       return { ...student, user: studentUser };
@@ -38,8 +42,13 @@ const importData = async () => {
       return { ...f, user: facultyUser };
     });
 
+    const sampleAccountants = accountants.map((a) => {
+      return { ...a, user: accountantUser };
+    });
+
     await Student.insertMany(sampleStudents);
     await Faculty.insertMany(sampleFaculty);
+    await Accountant.insertMany(sampleAccountants);
 
     console.log('✅ Data Imported Successfully!');
     process.exit();
@@ -56,6 +65,7 @@ const destroyData = async () => {
     await User.deleteMany();
     await Student.deleteMany();
     await Faculty.deleteMany();
+    await Accountant.deleteMany();
 
     console.log('🗑️ Data Destroyed!');
     process.exit();

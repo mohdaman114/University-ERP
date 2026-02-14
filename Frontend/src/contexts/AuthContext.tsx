@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   authenticatedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  updateUser: (userData: Partial<User>) => void; // Added updateUser
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prevUser => {
+      if (prevUser) {
+        const updatedUser = { ...prevUser, ...userData };
+        localStorage.setItem('university_user', JSON.stringify(updatedUser));
+        return updatedUser;
+      }
+      return prevUser;
+    });
+  };
 
   const login = async (email: string, password: string, role?: UserRole): Promise<boolean> => {
     try {
@@ -80,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         isAuthenticated: !!user,
         authenticatedFetch,
+        updateUser, // Added updateUser
       }}
     >
       {children}

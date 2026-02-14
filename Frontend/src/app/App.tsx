@@ -5,7 +5,12 @@ import { UniversityProvider } from '@/contexts/UniversityContext';
 import { LoginPage } from '@/app/components/university/LoginPage';
 import { DashboardLayout } from '@/app/components/university/DashboardLayout';
 import { StudentDashboard } from '@/app/components/university/StudentDashboard';
-import { AdminDashboard } from '@/app/components/university/AdminDashboard';
+import { AdminDashboardPage } from '@/app/components/university/admin-pages/AdminDashboardPage';
+import { StudentManagementPage } from '@/app/components/university/admin-pages/StudentManagementPage';
+import { FacultyManagementPage } from '@/app/components/university/admin-pages/FacultyManagementPage';
+import { AccountantManagementPage } from '@/app/components/university/admin-pages/AccountantManagementPage';
+import { NoticeManagementPage } from '@/app/components/university/admin-pages/NoticeManagementPage';
+import { AdminProfilePage } from '@/app/components/university/admin-pages/AdminProfilePage';
 import { FacultyDashboard } from '@/app/components/university/FacultyDashboard';
 import {
   ExaminationDashboard,
@@ -102,19 +107,28 @@ function ERPSystem() {
       case 'super_admin':
       case 'admin':
         if (currentPage === 'dashboard') {
-          return <AdminDashboard />;
+          return <AdminDashboardPage />;
+        }
+        if (currentPage === 'students') {
+          return <StudentManagementPage />;
+        }
+        if (currentPage === 'faculty') {
+          return <FacultyManagementPage />;
+        }
+        if (currentPage === 'accountants') {
+          return <AccountantManagementPage />;
+        }
+        if (currentPage === 'notices') {
+          return <NoticeManagementPage />;
+        }
+        if (currentPage === 'profile') {
+          return <AdminProfilePage />;
         }
         // For other admin pages, show coming soon
         return (
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">
-                {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                This module is coming soon!
-              </p>
-            </div>
+          <div className="p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">{currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}</h2>
+            <p className="text-gray-600 dark:text-gray-400">This page is under development.</p>
           </div>
         );
 

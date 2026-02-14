@@ -16,6 +16,7 @@ import type {
   StudyMaterial,
   AnalyticsData,
   User,
+  Accountant,
 } from '@/types/university';
 import {
   mockDepartments,
@@ -32,7 +33,6 @@ import {
   mockNotices,
   mockTimetable,
   mockStudyMaterials,
-  mockAnalytics,
   mockUsers,
 } from '@/data/mockData';
 
@@ -53,6 +53,7 @@ interface UniversityContextType {
   studyMaterials: StudyMaterial[];
   analytics: AnalyticsData;
   users: User[];
+  accountants: Accountant[];
   
   // Update functions
   addNotice: (notice: Notice) => void;
@@ -83,8 +84,178 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const [notices, setNotices] = useState<Notice[]>(mockNotices);
   const [timetable, setTimetable] = useState<TimetableEntry[]>(mockTimetable);
   const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>(mockStudyMaterials);
-  const [analytics, setAnalytics] = useState<AnalyticsData>(mockAnalytics);
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [accountants, setAccountants] = useState<Accountant[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    totalStudents: 0,
+    totalFaculty: 0,
+    totalDepartments: 0,
+    totalCourses: 0,
+    totalRevenue: 0,
+    pendingFees: 0,
+    totalAccountant: 0,
+    totalBooks: 0, // Added missing property
+  });
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchNotices = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/notices', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch notices');
+      }
+      const data = await response.json();
+      setNotices(data);
+    } catch (error) {
+      console.error('Error fetching notices:', error);
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/students', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch students');
+      }
+      const data = await response.json();
+      // Assuming students are also users, we can count them
+      setAnalytics(prev => ({ ...prev, totalStudents: data.length }));
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    }
+  };
+
+  const fetchFaculty = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/faculty', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch faculty');
+      }
+      const data = await response.json();
+      setAnalytics(prev => ({ ...prev, totalFaculty: data.length }));
+    } catch (error) {
+      console.error('Error fetching faculty:', error);
+    }
+  };
+
+  const fetchAccountants = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/accountants', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch accountants');
+      }
+      const data = await response.json();
+      setAccountants(data);
+      setAnalytics(prev => ({ ...prev, totalAccountant: data.length }));
+    } catch (error) {
+      console.error('Error fetching accountants:', error);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/departments', { // Assuming a /api/admin/departments endpoint
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch departments');
+      }
+      const data = await response.json();
+      setDepartments(data);
+      setAnalytics(prev => ({ ...prev, totalDepartments: data.length }));
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/courses', { // Assuming a /api/admin/courses endpoint
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch courses');
+      }
+      const data = await response.json();
+      setCourses(data);
+      setAnalytics(prev => ({ ...prev, totalCourses: data.length }));
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
+
+  const fetchBooks = async () => {
+    try {
+      const token = localStorage.getItem('jwt_token');
+      const response = await fetch('/api/admin/books', { // Assuming a /api/admin/books endpoint
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch books');
+      }
+      const data = await response.json();
+      setBooks(data);
+      setAnalytics(prev => ({ ...prev, totalBooks: data.length }));
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    fetchNotices();
+    fetchStudents();
+    fetchFaculty();
+    fetchAccountants();
+    fetchDepartments();
+    fetchCourses();
+    fetchBooks();
+  }, []);
 
   // Notice functions
   const addNotice = (notice: Notice) => {
@@ -172,6 +343,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
         studyMaterials,
         analytics,
         users,
+        accountants,
         addNotice,
         updateNotice,
         deleteNotice,
