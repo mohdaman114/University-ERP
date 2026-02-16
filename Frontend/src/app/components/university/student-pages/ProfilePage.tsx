@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -9,6 +9,7 @@ import {
   CardContent,
   Button,
 } from './ui-components';
+import { toast } from 'sonner';
 
 // Assuming a simple input component for demonstration
 const Input = ({ label, type = 'text', value, onChange, disabled = false, name }: { label: string; type?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; disabled?: boolean; name: string }) => (
@@ -51,6 +52,13 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Password change states
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
+  const [passwordUpdateError, setPasswordUpdateError] = useState<string | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setProfileData((prevData) => {
@@ -84,6 +92,46 @@ export function ProfilePage() {
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordUpdateError(null);
+    if (newPassword !== confirmNewPassword) {
+      setPasswordUpdateError('New passwords do not match.');
+      toast.error('New passwords do not match.');
+      return;
+    }
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      setPasswordUpdateError('Please fill in all password fields.');
+      toast.error('Please fill in all password fields.');
+      return;
+    }
+
+    setIsPasswordUpdating(true);
+    try {
+      const response = await authenticatedFetch('/api/students/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ oldPassword, newPassword, confirmNewPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update password.');
+      }
+
+      toast.success('Password updated successfully!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err) {
+      setPasswordUpdateError((err as Error).message);
+      toast.error((err as Error).message);
+    } finally {
+      setIsPasswordUpdating(false);
     }
   };
 
@@ -272,6 +320,43 @@ export function ProfilePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Password Management Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Password Management</CardTitle>
+          <CardDescription>Update your account password.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            label="Old Password"
+            name="oldPassword"
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+          <Input
+            label="New Password"
+            name="newPassword"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <Input
+            label="Confirm New Password"
+            name="confirmNewPassword"
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+          />
+          {passwordUpdateError && (
+            <p className="text-red-500 text-sm">{passwordUpdateError}</p>
+          )}
+          <Button onClick={handlePasswordChange} disabled={isPasswordUpdating}>
+            {isPasswordUpdating ? 'Updating...' : 'Update Password'}
+          </Button>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

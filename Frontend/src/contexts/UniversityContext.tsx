@@ -127,9 +127,15 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
         throw new Error('Failed to fetch notices');
       }
       const data = await response.json();
-      setNotices(data);
+      if (Array.isArray(data)) {
+        setNotices(data);
+      } else {
+        console.error('Fetched notices data is not an array:', data);
+        setNotices([]);
+      }
     } catch (error) {
       console.error('Error fetching notices:', error);
+      setNotices([]);
     }
   };
 

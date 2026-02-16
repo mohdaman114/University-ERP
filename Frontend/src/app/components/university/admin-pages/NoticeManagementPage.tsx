@@ -230,7 +230,7 @@ export function NoticeManagementPage() {
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium">{n.title}</span>
-                          <span className="text-xs text-gray-500 line-clamp-1">{n.description}</span>
+                          <span className="text-xs text-gray-500">{n.description}</span>
                         </div>
                       </TableCell>
                       <TableCell><Badge variant="outline">{n.category}</Badge></TableCell>

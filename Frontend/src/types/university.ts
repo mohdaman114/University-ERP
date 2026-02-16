@@ -5,7 +5,7 @@ export type UserRole =
   | 'student' 
   | 'faculty' 
   | 'examination' 
-  | 'accounts' 
+  | 'accountant' 
   | 'library' 
   | 'support';
 
@@ -49,10 +49,10 @@ export interface Course {
   id: string;
   name: string;
   code: string;
-  departmentId: string;
-  duration: number; // in years
-  totalSeats: number;
-  fees: number;
+  totalDuration: string; // in years or semesters
+  totalFees: number;
+  courseType: string; // e.g., 'B.Tech', 'BCA', 'B.Pharma'
+  credits: number;
   description?: string;
 }
 

@@ -5,9 +5,10 @@ const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
 const Notice = require('../models/Notice');
 const Accountant = require('../models/Accountant');
-const Department = require('../models/Department'); // Import Department model
-const Course = require('../models/Course'); // Import Course model
-const Book = require('../models/Book'); // Import Book model
+const Department = require('../models/Department');
+const Course = require('../models/Course');
+const Book = require('../models/Book');
+const FeeStructure = require('../models/FeeStructure'); // Import FeeStructure model
 
 // --- User CRUD ---
 
@@ -17,6 +18,69 @@ const Book = require('../models/Book'); // Import Book model
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find({});
   res.json(users);
+});
+
+// @desc    Get admin profile
+// @route   GET /api/admin/profile
+// @access  Private (Admin)
+const getAdminProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Update admin profile
+// @route   PUT /api/admin/profile
+// @access  Private (Admin)
+const updateAdminProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Change password
+// @route   PUT /api/admin/change-password
+// @access  Private (Admin)
+const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user._id);
+
+  if (user && (await user.matchPassword(currentPassword))) {
+    user.password = newPassword;
+    await user.save();
+    res.json({ message: 'Password updated' });
+  } else {
+    res.status(400);
+    throw new Error('Invalid current password');
+  }
 });
 
 // --- Department CRUD ---
@@ -29,6 +93,28 @@ const getAllDepartments = asyncHandler(async (req, res) => {
   res.json(departments);
 });
 
+// @desc    Create new department
+// @route   POST /api/admin/departments
+// @access  Private (Admin)
+const createDepartment = asyncHandler(async (req, res) => {
+  const { name, code, headOfDepartment } = req.body;
+
+  const departmentExists = await Department.findOne({ code });
+
+  if (departmentExists) {
+    res.status(400);
+    throw new Error('Department with this code already exists');
+  }
+
+  const department = await Department.create({
+    name,
+    code,
+    headOfDepartment
+  });
+
+  res.status(201).json(department);
+});
+
 // --- Course CRUD ---
 
 // @desc    Get all courses
@@ -37,6 +123,144 @@ const getAllDepartments = asyncHandler(async (req, res) => {
 const getAllCourses = asyncHandler(async (req, res) => {
   const courses = await Course.find({});
   res.json(courses);
+});
+
+// @desc    Create new course
+// @route   POST /api/admin/courses
+// @access  Private (Admin)
+const createCourse = asyncHandler(async (req, res) => {
+  if (Array.isArray(req.body)) {
+    // Handle bulk insert
+    const coursesToInsert = req.body.map(course => ({
+      name: course.name,
+      code: course.code,
+      credits: course.credits,
+      totalFees: course.totalFees,
+      totalDuration: course.totalDuration,
+      courseType: course.courseType,
+    }));
+
+    // Filter out any courses that already exist by code to prevent duplicates
+    const codes = coursesToInsert.map(c => c.code);
+    const existingCourses = await Course.find({ code: { $in: codes } });
+    const existingCodes = existingCourses.map(c => c.code);
+    
+    const newCourses = coursesToInsert.filter(c => !existingCodes.includes(c.code));
+
+    if (newCourses.length === 0) {
+      res.status(200).json({ message: 'All provided courses already exist', courses: existingCourses });
+      return;
+    }
+
+    try {
+      const createdCourses = await Course.insertMany(newCourses);
+      res.status(201).json(createdCourses);
+    } catch (error) {
+      res.status(400);
+      throw new Error('Bulk insert failed: ' + error.message);
+    }
+    return;
+  }
+
+  const { name, code, credits, totalFees, totalDuration, courseType } = req.body;
+
+  const courseExists = await Course.findOne({ code });
+
+  if (courseExists) {
+    res.status(400);
+    throw new Error('Course with this code already exists');
+  }
+
+  const course = await Course.create({
+    name,
+    code,
+    credits,
+    totalFees,
+    totalDuration,
+    courseType,
+  });
+
+  res.status(201).json(course);
+});
+
+// @desc    Update course
+// @route   PUT /api/admin/courses/:id
+// @access  Private (Admin)
+const updateCourse = asyncHandler(async (req, res) => {
+  const { name, code, credits, totalFees, totalDuration, courseType } = req.body;
+
+  const course = await Course.findById(req.params.id);
+
+  if (course) {
+    course.name = name || course.name;
+    course.code = code || course.code;
+    course.credits = credits || course.credits;
+    course.totalFees = totalFees || course.totalFees;
+    course.totalDuration = totalDuration || course.totalDuration;
+    course.courseType = courseType || course.courseType;
+
+    const updatedCourse = await course.save();
+    res.json(updatedCourse);
+  } else {
+    res.status(404);
+    throw new Error('Course not found');
+  }
+});
+
+// @desc    Delete course
+// @route   DELETE /api/admin/courses/:id
+// @access  Private (Admin)
+const deleteCourse = asyncHandler(async (req, res) => {
+  const course = await Course.findById(req.params.id);
+
+  if (course) {
+    await Course.findByIdAndDelete(course._id);
+    res.json({ message: 'Course removed' });
+  } else {
+    res.status(404);
+    throw new Error('Course not found');
+  }
+});
+
+// --- Fee Structure CRUD ---
+
+// @desc    Create or Update Fee Structure for a Course & Semester
+// @route   POST /api/admin/fees/structure
+// @access  Private (Admin)
+const createFeeStructure = asyncHandler(async (req, res) => {
+  const { courseId, semester, tuitionFee, libraryFee, examFee, otherFee, dueDate } = req.body;
+
+  // Verify course exists
+  const course = await Course.findById(courseId);
+  if (!course) {
+    res.status(404);
+    throw new Error('Course not found');
+  }
+
+  let feeStructure = await FeeStructure.findOne({ courseId, semester });
+
+  if (feeStructure) {
+    feeStructure.tuitionFee = tuitionFee;
+    feeStructure.libraryFee = libraryFee;
+    feeStructure.examFee = examFee;
+    feeStructure.otherFee = otherFee;
+    feeStructure.dueDate = dueDate;
+    // totalAmount auto-calculated by pre-save
+    await feeStructure.save();
+    res.json(feeStructure);
+  } else {
+    feeStructure = await FeeStructure.create({
+      courseId,
+      semester,
+      tuitionFee,
+      libraryFee,
+      examFee,
+      otherFee,
+      dueDate,
+      totalAmount: 0 // Will be recalculated
+    });
+    res.status(201).json(feeStructure);
+  }
 });
 
 // --- Book CRUD ---
@@ -55,7 +279,17 @@ const getAllBooks = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/students
 // @access  Private (Admin)
 const getAllStudents = asyncHandler(async (req, res) => {
-  const students = await Student.find({}).populate('user', 'role');
+  const keyword = req.query.keyword
+    ? {
+        $or: [
+          { name: { $regex: req.query.keyword, $options: 'i' } },
+          { studentId: { $regex: req.query.keyword, $options: 'i' } },
+          { email: { $regex: req.query.keyword, $options: 'i' } },
+        ],
+      }
+    : {};
+
+  const students = await Student.find({ ...keyword }).populate('user', 'role').populate('course', 'name');
   res.json(students);
 });
 
@@ -68,7 +302,7 @@ const getStudentById = asyncHandler(async (req, res) => {
       { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null },
       { studentId: req.params.id }
     ]
-  }).populate('user', 'role');
+  }).populate('user', 'role').populate('course', 'name');
 
   if (student) {
     res.json(student);
@@ -293,6 +527,7 @@ const createFaculty = asyncHandler(async (req, res) => {
   }
 
   try {
+    // Create User
     const user = await User.create({
       name,
       email,
@@ -301,6 +536,7 @@ const createFaculty = asyncHandler(async (req, res) => {
     });
 
     if (user) {
+      // Create Faculty Profile
       const faculty = await Faculty.create({
         user: user._id,
         name,
@@ -344,7 +580,6 @@ const updateFaculty = asyncHandler(async (req, res) => {
   });
 
   if (faculty) {
-    // Update Faculty fields
     faculty.name = req.body.name || faculty.name;
     faculty.email = req.body.email || faculty.email;
     faculty.facultyId = req.body.facultyId || faculty.facultyId;
@@ -359,9 +594,16 @@ const updateFaculty = asyncHandler(async (req, res) => {
 
     const updatedFaculty = await faculty.save();
 
-    // Sync with User model
     const user = await User.findById(faculty.user);
     if (user) {
+      if (req.body.email && req.body.email !== user.email) {
+        const userWithNewEmail = await User.findOne({ email: req.body.email });
+        if (userWithNewEmail && userWithNewEmail._id.toString() !== user._id.toString()) {
+          res.status(400);
+          throw new Error('User with this email already exists');
+        }
+      }
+
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       if (req.body.password) {
@@ -373,7 +615,7 @@ const updateFaculty = asyncHandler(async (req, res) => {
     res.json(updatedFaculty);
   } else {
     res.status(404);
-    throw new Error('Faculty member not found');
+    throw new Error('Faculty not found');
   }
 });
 
@@ -433,14 +675,14 @@ const getAccountantById = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/accountants
 // @access  Private (Admin)
 const createAccountant = asyncHandler(async (req, res) => {
-  const { 
-    name, email, password, accountantId, designation, 
-    department, dateOfJoining, gender, address, 
-    phoneNumber, qualification, experience 
+  const {
+    name, email, password, accountantId, designation,
+    department, dateOfJoining, gender, address,
+    phoneNumber, qualification, experience
   } = req.body;
 
   // Validate required fields
-  if (!name || !email || !password || !accountantId || !designation) {
+  if (!name || !email || !password || !accountantId || !designation || !department || !dateOfJoining || !gender || !address || !phoneNumber || !qualification || !experience) {
     res.status(400);
     throw new Error('Please provide all required fields');
   }
@@ -458,6 +700,7 @@ const createAccountant = asyncHandler(async (req, res) => {
   }
 
   try {
+    // Create User
     const user = await User.create({
       name,
       email,
@@ -466,13 +709,14 @@ const createAccountant = asyncHandler(async (req, res) => {
     });
 
     if (user) {
+      // Create Accountant Profile
       const accountant = await Accountant.create({
         user: user._id,
         name,
         email,
         accountantId,
         designation,
-        department: department || 'Finance',
+        department,
         dateOfJoining,
         gender,
         address,
@@ -509,7 +753,6 @@ const updateAccountant = asyncHandler(async (req, res) => {
   });
 
   if (accountant) {
-    // Update Accountant fields
     accountant.name = req.body.name || accountant.name;
     accountant.email = req.body.email || accountant.email;
     accountant.accountantId = req.body.accountantId || accountant.accountantId;
@@ -527,6 +770,15 @@ const updateAccountant = asyncHandler(async (req, res) => {
     // Sync with User model
     const user = await User.findById(accountant.user);
     if (user) {
+      // Check if email is being updated and if it's unique
+      if (req.body.email && req.body.email !== user.email) {
+        const userWithNewEmail = await User.findOne({ email: req.body.email });
+        if (userWithNewEmail && userWithNewEmail._id.toString() !== user._id.toString()) {
+          res.status(400);
+          throw new Error('User with this email already exists');
+        }
+      }
+
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       if (req.body.password) {
@@ -575,21 +827,31 @@ const getAllNotices = asyncHandler(async (req, res) => {
   res.json(notices);
 });
 
+// @desc    Get notice by ID
+// @route   GET /api/admin/notices/:id
+// @access  Private (Admin)
+const getNoticeById = asyncHandler(async (req, res) => {
+  const notice = await Notice.findById(req.params.id);
+
+  if (notice) {
+    res.json(notice);
+  } else {
+    res.status(404);
+    throw new Error('Notice not found');
+  }
+});
+
 // @desc    Create new notice
 // @route   POST /api/admin/notices
 // @access  Private (Admin)
 const createNotice = asyncHandler(async (req, res) => {
-  const { title, description, category } = req.body;
-
-  if (!title || !description || !category) {
-    res.status(400);
-    throw new Error('Please provide all required fields: title, description, category');
-  }
+  const { title, description, category, date } = req.body;
 
   const notice = await Notice.create({
     title,
     description,
     category,
+    date
   });
 
   res.status(201).json(notice);
@@ -599,14 +861,13 @@ const createNotice = asyncHandler(async (req, res) => {
 // @route   PUT /api/admin/notices/:id
 // @access  Private (Admin)
 const updateNotice = asyncHandler(async (req, res) => {
-  const { title, description, category } = req.body;
-
   const notice = await Notice.findById(req.params.id);
 
   if (notice) {
-    notice.title = title || notice.title;
-    notice.description = description || notice.description;
-    notice.category = category || notice.category;
+    notice.title = req.body.title || notice.title;
+    notice.description = req.body.description || notice.description;
+    notice.category = req.body.category || notice.category;
+    notice.date = req.body.date || notice.date;
 
     const updatedNotice = await notice.save();
     res.json(updatedNotice);
@@ -623,7 +884,7 @@ const deleteNotice = asyncHandler(async (req, res) => {
   const notice = await Notice.findById(req.params.id);
 
   if (notice) {
-    await Notice.findByIdAndDelete(req.params.id);
+    await Notice.findByIdAndDelete(notice._id);
     res.json({ message: 'Notice removed' });
   } else {
     res.status(404);
@@ -631,96 +892,19 @@ const deleteNotice = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get notice by ID
-// @route   GET /api/admin/notices/:id
-// @access  Private (Admin)
-const getNoticeById = asyncHandler(async (req, res) => {
-  const notice = await Notice.findById(req.params.id);
-
-  if (notice) {
-    res.json(notice);
-  } else {
-    res.status(404);
-    throw new Error('Notice not found');
-  }
-});
-
-// @desc    Get admin profile
-// @route   GET /api/admin/profile
-// @access  Private (Admin)
-const getAdminProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password'); // Exclude password
-
-  if (user) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
-  } else {
-    res.status(404);
-    throw new Error('Admin user not found');
-  }
-});
-
-// @desc    Update admin profile
-// @route   PUT /api/admin/profile
-// @access  Private (Admin)
-const updateAdminProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
-
-  if (user) {
-    user.name = req.body.name || user.name;
-
-    if (req.body.email && req.body.email !== user.email) {
-      const userWithNewEmail = await User.findOne({ email: req.body.email });
-      if (userWithNewEmail && userWithNewEmail._id.toString() !== user._id.toString()) {
-        res.status(400);
-        throw new Error('User with this email already exists');
-      }
-      user.email = req.body.email;
-    }
-
-    const updatedUser = await user.save();
-
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-    });
-  } else {
-    res.status(404);
-    throw new Error('Admin user not found');
-  }
-});
-
-// @desc    Change admin password (Ensured to be before module.exports)
-// @route   PUT /api/admin/change-password
-// @access  Private (Admin)
-const changePassword = asyncHandler(async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-
-  const user = await User.findById(req.user.id);
-
-  if (user) {
-    if (!(await user.matchPassword(currentPassword))) {
-      res.status(401);
-      throw new Error('Invalid current password');
-    }
-
-    user.password = newPassword; // User model will hash this automatically
-    await user.save();
-
-    res.json({ message: 'Password updated successfully' });
-  } else {
-    res.status(404);
-    throw new Error('User not found');
-  }
-});
-
 module.exports = {
+  getAllUsers,
+  getAdminProfile,
+  updateAdminProfile,
+  changePassword,
+  getAllDepartments,
+  createDepartment,
+  getAllCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+  createFeeStructure,
+  getAllBooks,
   getAllStudents,
   getStudentById,
   createStudent,
@@ -737,15 +921,8 @@ module.exports = {
   updateAccountant,
   deleteAccountant,
   getAllNotices,
+  getNoticeById,
   createNotice,
   updateNotice,
   deleteNotice,
-  getAllUsers,
-  getAllDepartments,
-  getAllCourses,
-  getAllBooks,
-  getNoticeById, // Add getNoticeById here
-  changePassword,
-  getAdminProfile, // Add new functions here
-  updateAdminProfile // Add new functions here
 };

@@ -286,6 +286,7 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Students', icon: Users, page: 'students' },
     { name: 'Faculty', icon: GraduationCap, page: 'faculty' },
     { name: 'Accountants', icon: DollarSign, page: 'accountants' },
+    { name: 'Courses', icon: BookOpen, page: 'courses' },
     { name: 'Notices', icon: FileText, page: 'notices' },
   ],
   student: [
@@ -301,8 +302,8 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
     { name: 'Timetable', icon: Calendar, page: 'timetable' },
     { name: 'Attendance', icon: Calendar, page: 'attendance' },
-    { name: 'Marks Entry', icon: FileText, page: 'marks' },
-    { name: 'Study Materials', icon: BookOpen, page: 'materials' },
+    { name: 'Marks Entry', icon: FileText, page: 'marks-entry' },
+    { name: 'Study Materials', icon: BookOpen, page: 'study-materials' },
     { name: 'Students', icon: Users, page: 'students' },
   ],
   examination: [
@@ -312,9 +313,9 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Results', icon: FileText, page: 'results' },
     { name: 'Revaluation', icon: FileText, page: 'revaluation' },
   ],
-  accounts: [
+  accountant: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
-    { name: 'Fee Structure', icon: DollarSign, page: 'feestructure' },
+    { name: 'Fees Management', icon: DollarSign, page: 'feesmanagement' },
     { name: 'Payments', icon: DollarSign, page: 'payments' },
     { name: 'Receipts', icon: FileText, page: 'receipts' },
     { name: 'Reports', icon: FileText, page: 'reports' },

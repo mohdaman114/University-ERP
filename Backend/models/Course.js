@@ -12,9 +12,17 @@ const courseSchema = mongoose.Schema(
       required: true,
       unique: true,
     },
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
+
+    totalFees: {
+      type: Number,
+      required: true,
+    },
+    totalDuration: {
+      type: String, // Duration in years or semesters
+      required: true,
+    },
+    courseType: {
+      type: String, // e.g., 'B.Tech', 'BCA', 'B.Pharma'
       required: true,
     },
     credits: {

@@ -23,6 +23,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUniversity } from '@/contexts/UniversityContext';
 import { toast } from 'sonner';
 import type { StudyMaterial } from '@/types/university';
+import { FacultyProfilePage } from './faculty-pages/FacultyProfilePage';
+import { TimetablePage } from './faculty-pages/TimetablePage';
+import { AttendancePage } from './faculty-pages/AttendancePage';
+import { MarksEntryPage } from './faculty-pages/MarksEntryPage';
+import { StudyMaterialsPage } from './faculty-pages/StudyMaterialsPage';
+import { StudentsPage } from './faculty-pages/StudentsPage';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -571,67 +577,81 @@ export function FacultyDashboard({ currentPage }: { currentPage: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Welcome, Prof. {user?.name}! 👨‍🏫
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Manage your classes, students, and academic content
-        </p>
-      </div>
+      {currentPage === 'profile' ? (
+        <FacultyProfilePage />
+      ) : currentPage === 'timetable' ? (
+        <TimetablePage />
+      ) : currentPage === 'attendance' ? (
+        <AttendancePage />
+      ) : currentPage === 'marks-entry' ? (
+        <MarksEntryPage />
+      ) : currentPage === 'study-materials' ? (
+        <StudyMaterialsPage />
+      ) : currentPage === 'students' ? (
+        <StudentsPage />
+      ) : (
+        <>
+          {/* Welcome Section */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Welcome, Prof. {user?.name}! 👨‍🏫
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Manage your classes, students, and academic content
+            </p>
+          </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="border-l-4 border-l-blue-600">
-            <CardHeader className="pb-2">
-              <CardDescription>My Subjects</CardDescription>
-              <CardTitle className="text-3xl flex items-center gap-2">
-                <BookOpen className="h-8 w-8 text-blue-600" />
-                {facultySubjects.length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Active courses this semester
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-l-4 border-l-blue-600">
+                <CardHeader className="pb-2">
+                  <CardDescription>My Subjects</CardDescription>
+                  <CardTitle className="text-3xl flex items-center gap-2">
+                    <BookOpen className="h-8 w-8 text-blue-600" />
+                    {facultySubjects.length}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Active courses this semester
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="border-l-4 border-l-purple-600">
-            <CardHeader className="pb-2">
-              <CardDescription>Total Students</CardDescription>
-              <CardTitle className="text-3xl flex items-center gap-2">
-                <Users className="h-8 w-8 text-purple-600" />
-                {studentsInCourses}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Across all your courses
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="border-l-4 border-l-purple-600">
+                <CardHeader className="pb-2">
+                  <CardDescription>Total Students</CardDescription>
+                  <CardTitle className="text-3xl flex items-center gap-2">
+                    <Users className="h-8 w-8 text-purple-600" />
+                    {studentsInCourses}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Across all your courses
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="border-l-4 border-l-green-600">
-            <CardHeader className="pb-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="border-l-4 border-l-green-600">
+                <CardHeader className="pb-2">
               <CardDescription>Classes Today</CardDescription>
               <CardTitle className="text-3xl flex items-center gap-2">
                 <Calendar className="h-8 w-8 text-green-600" />
@@ -855,7 +875,9 @@ export function FacultyDashboard({ currentPage }: { currentPage: string }) {
             ))}
           </div>
         </CardContent>
-      </Card>
+          </Card>
+          </>
+        )}
     </div>
   );
 }

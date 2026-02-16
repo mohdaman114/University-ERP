@@ -30,8 +30,13 @@ const {
   updateAdminProfile, // Add new functions here
   // Department imports
   getAllDepartments,
+  createDepartment, // Import createDepartment
   // Course imports
   getAllCourses,
+  createCourse, // Import createCourse
+  updateCourse, // Import updateCourse
+  deleteCourse, // Import deleteCourse
+  createFeeStructure, // Import createFeeStructure
   // Book imports
   getAllBooks
 } = require('../controllers/adminController');
@@ -87,11 +92,21 @@ router.route('/users')
 
 // Department Management (for dashboard analytics)
 router.route('/departments')
-  .get(getAllDepartments);
+  .get(getAllDepartments)
+  .post(createDepartment); // Add POST route
 
 // Course Management (for dashboard analytics)
 router.route('/courses')
-  .get(getAllCourses);
+  .get(getAllCourses)
+  .post(createCourse);
+
+router.route('/courses/:id')
+  .put(updateCourse)
+  .delete(deleteCourse); // Add POST route
+
+// Fee Structure Management
+router.route('/fees/structure')
+  .post(createFeeStructure); // Add POST route
 
 // Book Management (for dashboard analytics)
 router.route('/books')

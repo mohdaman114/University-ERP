@@ -10,11 +10,12 @@ import { StudentManagementPage } from '@/app/components/university/admin-pages/S
 import { FacultyManagementPage } from '@/app/components/university/admin-pages/FacultyManagementPage';
 import { AccountantManagementPage } from '@/app/components/university/admin-pages/AccountantManagementPage';
 import { NoticeManagementPage } from '@/app/components/university/admin-pages/NoticeManagementPage';
+import CourseManagementPage from '@/app/components/university/admin-pages/CourseManagementPage';
 import { AdminProfilePage } from '@/app/components/university/admin-pages/AdminProfilePage';
 import { FacultyDashboard } from '@/app/components/university/FacultyDashboard';
+import { AccountantDashboard } from '@/app/components/university/accountant-pages/AccountantDashboard';
 import {
   ExaminationDashboard,
-  AccountsDashboard,
   LibraryDashboard,
 } from '@/app/components/university/OtherDashboards';
 import { AIChatbox } from '@/app/components/AIChatbox';
@@ -121,6 +122,9 @@ function ERPSystem() {
         if (currentPage === 'notices') {
           return <NoticeManagementPage />;
         }
+        if (currentPage === 'courses') {
+          return <CourseManagementPage />;
+        }
         if (currentPage === 'profile') {
           return <AdminProfilePage />;
         }
@@ -141,10 +145,11 @@ function ERPSystem() {
       case 'examination':
         return <ExaminationDashboard />;
 
-      case 'accounts':
-        return <AccountsDashboard />;
+      case 'accountant':
+        return <AccountantDashboard currentPage={currentPage} />;
 
       case 'library':
+
         return <LibraryDashboard />;
 
       default:

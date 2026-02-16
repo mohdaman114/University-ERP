@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  Users, 
-  Search, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import {
+  Users,
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
   UserPlus,
   Mail,
   Phone,
@@ -16,20 +16,20 @@ import {
   Save,
   Loader2
 } from 'lucide-react';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent, 
-  Button, 
-  Input, 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell, 
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Input,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
   Badge,
   Dialog,
   DialogHeader,
@@ -38,6 +38,7 @@ import {
   Label
 } from './AdminUI';
 import { toast } from 'sonner';
+import useDebounce from '../../../../hooks/useDebounce';
 
 interface Student {
   _id: string;
@@ -80,18 +81,21 @@ export function StudentManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms debounce
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    fetchStudents(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (keyword = '') => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/students', {
+      setIsError(false);
+      const response = await fetch(`/api/admin/students?keyword=${keyword}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }
@@ -101,9 +105,11 @@ export function StudentManagementPage() {
         setStudents(data);
       } else {
         toast.error(data.message || 'Failed to fetch students');
+        setIsError(true);
       }
     } catch (error) {
       toast.error('Error connecting to server');
+      setIsError(true);
     } finally {
       setIsLoading(false);
     }
@@ -196,11 +202,12 @@ export function StudentManagementPage() {
     }
   };
 
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Remove client-side filtering as it's now handled by the backend
+  // const filteredStudents = students.filter(student =>
+  //   student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   student.email.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className="space-y-6">
@@ -223,8 +230,8 @@ export function StudentManagementPage() {
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search students by name, ID or email..." 
+              <Input
+                placeholder="Search students by name, ID or email..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -238,6 +245,11 @@ export function StudentManagementPage() {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <p className="text-muted-foreground">Loading students data...</p>
             </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <X className="w-8 h-8 text-red-500" />
+              <p className="text-muted-foreground">Error loading students. Please try again.</p>
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -249,14 +261,14 @@ export function StudentManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.length === 0 ? (
+                {students.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                       No students found matching your search.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredStudents.map((student) => (
+                  students.map((student) => (
                     <TableRow key={student._id}>
                       <TableCell>
                         <div className="flex flex-col">
@@ -286,15 +298,15 @@ export function StudentManagementPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => handleOpenDialog(student)}
                           >
                             <Edit2 className="w-4 h-4 text-blue-600" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(student._id, student.studentId)}
                           >

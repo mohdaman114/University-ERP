@@ -54,6 +54,12 @@ const facultySchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    subjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+      },
+    ],
     profilePicture: {
       type: String,
       default: '/uploads/default.png',

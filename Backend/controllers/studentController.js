@@ -135,7 +135,39 @@ const updateStudentProfile = asyncHandler(async (req, res) => {
   }
 });
 
+const updateStudentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+  if (!oldPassword || !newPassword || !confirmNewPassword) {
+    res.status(400);
+    throw new Error('Please enter all fields');
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    res.status(400);
+    throw new Error('New password and confirm new password do not match');
+  }
+
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    if (!(await user.matchPassword(oldPassword))) {
+      res.status(401);
+      throw new Error('Invalid old password');
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 module.exports = {
   getStudentProfile,
   updateStudentProfile,
+  updateStudentPassword,
 };
