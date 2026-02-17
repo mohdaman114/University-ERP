@@ -2,9 +2,10 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { DashboardPage } from './DashboardPage';
 import { FeesManagementPage } from './FeesManagementPage';
+import { FacultySalaryManagementPage } from './FacultySalaryManagementPage';
 import { PaymentsPage } from './PaymentsPage';
 import { ReceiptsPage } from './ReceiptsPage';
-import { ReportsPage } from './ReportsPage';
+import { ReportsPage } from './ReportsPage';  
 
 const container = {
   hidden: { opacity: 0 },
@@ -21,6 +22,7 @@ export function AccountantDashboard({ currentPage }: { currentPage: string }) {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       {currentPage === 'dashboard' && <DashboardPage />}
       {currentPage === 'feesmanagement' && <FeesManagementPage />}
+      {currentPage === 'salary' && <FacultySalaryManagementPage />}
       {currentPage === 'payments' && <PaymentsPage />}
       {currentPage === 'receipts' && <ReceiptsPage />}
       {currentPage === 'reports' && <ReportsPage />}

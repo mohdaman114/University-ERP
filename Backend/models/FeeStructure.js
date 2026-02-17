@@ -42,9 +42,8 @@ const feeStructureSchema = mongoose.Schema(
 );
 
 // Calculate totalAmount before saving
-feeStructureSchema.pre('save', function(next) {
-  this.totalAmount = this.tuitionFee + this.libraryFee + this.examFee + this.otherFee;
-  next();
+feeStructureSchema.pre('save', function() {
+  this.totalAmount = (this.tuitionFee || 0) + (this.libraryFee || 0) + (this.examFee || 0) + (this.otherFee || 0);
 });
 
 const FeeStructure = mongoose.model('FeeStructure', feeStructureSchema);

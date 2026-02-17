@@ -10,6 +10,7 @@ import { StudentManagementPage } from '@/app/components/university/admin-pages/S
 import { FacultyManagementPage } from '@/app/components/university/admin-pages/FacultyManagementPage';
 import { AccountantManagementPage } from '@/app/components/university/admin-pages/AccountantManagementPage';
 import { NoticeManagementPage } from '@/app/components/university/admin-pages/NoticeManagementPage';
+import { AdminTimetableManagementPage } from '@/app/components/university/admin-pages/AdminTimetableManagementPage';
 import CourseManagementPage from '@/app/components/university/admin-pages/CourseManagementPage';
 import { AdminProfilePage } from '@/app/components/university/admin-pages/AdminProfilePage';
 import { FacultyDashboard } from '@/app/components/university/FacultyDashboard';
@@ -124,6 +125,9 @@ function ERPSystem() {
         }
         if (currentPage === 'courses') {
           return <CourseManagementPage />;
+        }
+        if (currentPage === 'timetable') {
+          return <AdminTimetableManagementPage />;
         }
         if (currentPage === 'profile') {
           return <AdminProfilePage />;

@@ -278,6 +278,7 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Faculty', icon: GraduationCap, page: 'faculty' },
     { name: 'Accountants', icon: DollarSign, page: 'accountants' },
     { name: 'Courses', icon: BookOpen, page: 'courses' },
+    { name: 'Timetable', icon: Calendar, page: 'timetable' },
     { name: 'Notices', icon: FileText, page: 'notices' },
     { name: 'Analytics', icon: LayoutDashboard, page: 'analytics' },
   ],
@@ -287,6 +288,7 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
     { name: 'Faculty', icon: GraduationCap, page: 'faculty' },
     { name: 'Accountants', icon: DollarSign, page: 'accountants' },
     { name: 'Courses', icon: BookOpen, page: 'courses' },
+    { name: 'Timetable', icon: Calendar, page: 'timetable' },
     { name: 'Notices', icon: FileText, page: 'notices' },
   ],
   student: [
@@ -300,11 +302,13 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
   ],
   faculty: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
+    { name: 'My Salary', icon: DollarSign, page: 'salary' },
     { name: 'Timetable', icon: Calendar, page: 'timetable' },
-    { name: 'Attendance', icon: Calendar, page: 'attendance' },
+    { name: 'Attendance', icon: Calendar, page: 'attend   ance' },
     { name: 'Marks Entry', icon: FileText, page: 'marks-entry' },
     { name: 'Study Materials', icon: BookOpen, page: 'study-materials' },
     { name: 'Students', icon: Users, page: 'students' },
+    { name: 'Notices', icon: FileText, page: 'notices' },
   ],
   examination: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
@@ -316,6 +320,7 @@ const navigationByRole: Record<UserRole, { name: string; icon: any; page: string
   accountant: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
     { name: 'Fees Management', icon: DollarSign, page: 'feesmanagement' },
+    { name: 'Salary Management', icon: DollarSign, page: 'salary' },
     { name: 'Payments', icon: DollarSign, page: 'payments' },
     { name: 'Receipts', icon: FileText, page: 'receipts' },
     { name: 'Reports', icon: FileText, page: 'reports' },

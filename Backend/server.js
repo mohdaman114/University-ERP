@@ -10,6 +10,7 @@ const feeRoutes = require('./routes/feeRoutes');
 const noticeRoutes = require('./routes/noticeRoutes');
 const resultsRoutes = require('./routes/resultsRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
+const salaryRoutes = require('./routes/salaryRoutes');
 const helmet = require('helmet');
 const cors = require('cors'); // Ensure cors is imported here
 const morgan = require('morgan');
@@ -40,6 +41,7 @@ app.use('/api/fees', feeRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/results', resultsRoutes);
 app.use('/api/timetable', timetableRoutes);
+app.use('/api/salary', salaryRoutes);
 
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 

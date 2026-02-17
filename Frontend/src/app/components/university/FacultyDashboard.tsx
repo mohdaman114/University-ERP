@@ -29,6 +29,8 @@ import { AttendancePage } from './faculty-pages/AttendancePage';
 import { MarksEntryPage } from './faculty-pages/MarksEntryPage';
 import { StudyMaterialsPage } from './faculty-pages/StudyMaterialsPage';
 import { StudentsPage } from './faculty-pages/StudentsPage';
+import { NoticePage } from './faculty-pages/NoticePage';
+import { SalaryPage } from './faculty-pages/SalaryPage';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -589,6 +591,10 @@ export function FacultyDashboard({ currentPage }: { currentPage: string }) {
         <StudyMaterialsPage />
       ) : currentPage === 'students' ? (
         <StudentsPage />
+      ) : currentPage === 'notices' ? (
+        <NoticePage />
+      ) : currentPage === 'salary' ? (
+        <SalaryPage />
       ) : (
         <>
           {/* Welcome Section */}
