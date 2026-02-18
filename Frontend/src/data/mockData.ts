@@ -53,7 +53,7 @@ export const mockUsers: (User & { password: string })[] = [
     email: 'exam@university.edu',
     password: 'exam123',
     name: 'Dr. Meera Desai',
-    role: 'examination',
+    role: 'examiner',
     phone: '+91 98765 43213',
     employeeId: 'EMP002',
   },

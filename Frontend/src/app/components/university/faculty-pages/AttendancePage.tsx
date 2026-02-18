@@ -19,9 +19,10 @@ interface Student {
   enrollmentNumber: string;
   branch?: string;
   semester?: number;
+  admissionYear: number; // Made admissionYear required
 }
 
-export function AttendancePage() {
+export function AttendancePage() {  
   const { authenticatedFetch } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -32,6 +33,7 @@ export function AttendancePage() {
   // Filters
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [selectedSemester, setSelectedSemester] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>(''); // New state for year
   const [searchTerm, setSearchTerm] = useState<string>('');
   
   // Modal State
@@ -44,17 +46,19 @@ export function AttendancePage() {
   // Get unique branches and semesters for filters
   const uniqueBranches = Array.from(new Set(students.map(s => s.branch).filter(Boolean)));
   const uniqueSemesters = Array.from(new Set(students.map(s => s.semester).filter(Boolean))).sort();
+  const uniqueYears = Array.from(new Set(students.map(s => s.admissionYear).filter(Boolean))).sort(); // New: Get unique years
 
   // Filtered students
   const filteredStudents = students.filter(student => {
       const matchBranch = selectedBranch ? student.branch === selectedBranch : true;
       const matchSemester = selectedSemester ? student.semester?.toString() === selectedSemester : true;
+      const matchYear = selectedYear ? student.admissionYear?.toString() === selectedYear : true; // New: Match year
       const searchLower = searchTerm.toLowerCase();
       const matchSearch = searchTerm 
           ? (student.name.toLowerCase().includes(searchLower) || 
              student.studentId.toLowerCase().includes(searchLower))
           : true;
-      return matchBranch && matchSemester && matchSearch;
+      return matchBranch && matchSemester && matchYear && matchSearch; // Include matchYear
   });
 
 
@@ -62,10 +66,12 @@ export function AttendancePage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [studentsResponse, subjectsResponse] = await Promise.all([
-          authenticatedFetch('/api/faculty/students'),
-          authenticatedFetch('/api/faculty/subjects'),
-        ]);
+        const queryParams = new URLSearchParams();
+        if (selectedSemester) queryParams.append('semester', selectedSemester);
+        if (selectedYear) queryParams.append('year', selectedYear);
+
+        const studentsResponse = await authenticatedFetch(`/api/faculty/students?${queryParams.toString()}`);
+        const subjectsResponse = await authenticatedFetch('/api/faculty/subjects');
 
         if (!studentsResponse.ok) throw new Error(`HTTP error! status: ${studentsResponse.status} for students`);
         if (!subjectsResponse.ok) throw new Error(`HTTP error! status: ${subjectsResponse.status} for subjects`);
@@ -90,7 +96,7 @@ export function AttendancePage() {
     };
 
     fetchData();
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, selectedSemester, selectedYear]); // Add selectedSemester and selectedYear to dependencies
 
   const [attendance, setAttendance] = useState<{ [studentId: string]: { [subjectId: string]: 'present' | 'absent' | undefined } }>({});
 
@@ -328,6 +334,20 @@ export function AttendancePage() {
                       <option value="">All Semesters</option>
                       {uniqueSemesters.map((sem: any) => (
                           <option key={sem} value={sem}>Semester {sem}</option>
+                      ))}
+                  </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                  <label className="text-gray-700 dark:text-gray-300 font-medium">Filter by Year:</label>
+                  <select 
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-700 dark:placeholder-gray-400 dark:text-white min-w-[150px]"
+                  >
+                      <option value="">All Years</option>
+                      {uniqueYears.map((year: any) => (
+                          <option key={year} value={year}>{year}</option>
                       ))}
                   </select>
               </div>

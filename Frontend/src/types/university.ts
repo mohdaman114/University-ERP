@@ -4,7 +4,7 @@ export type UserRole =
   | 'admin' 
   | 'student' 
   | 'faculty' 
-  | 'examination' 
+  | 'examiner' 
   | 'accountant' 
   | 'library' 
   | 'support';

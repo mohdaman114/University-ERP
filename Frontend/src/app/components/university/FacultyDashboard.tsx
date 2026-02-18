@@ -27,8 +27,6 @@ import { FacultyProfilePage } from './faculty-pages/FacultyProfilePage';
 import { TimetablePage } from './faculty-pages/TimetablePage';
 import { AttendancePage } from './faculty-pages/AttendancePage';
 import { MarksEntryPage } from './faculty-pages/MarksEntryPage';
-import { StudyMaterialsPage } from './faculty-pages/StudyMaterialsPage';
-import { StudentsPage } from './faculty-pages/StudentsPage';
 import { NoticePage } from './faculty-pages/NoticePage';
 import { SalaryPage } from './faculty-pages/SalaryPage';
 
@@ -587,10 +585,6 @@ export function FacultyDashboard({ currentPage }: { currentPage: string }) {
         <AttendancePage />
       ) : currentPage === 'marks-entry' ? (
         <MarksEntryPage />
-      ) : currentPage === 'study-materials' ? (
-        <StudyMaterialsPage />
-      ) : currentPage === 'students' ? (
-        <StudentsPage />
       ) : currentPage === 'notices' ? (
         <NoticePage />
       ) : currentPage === 'salary' ? (

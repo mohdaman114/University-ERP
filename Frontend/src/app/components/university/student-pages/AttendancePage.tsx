@@ -29,8 +29,8 @@ export function AttendancePage() {
         if (!response.ok) {
           throw new Error('Failed to fetch attendance data.');
         }
-        const data: AttendanceRecord[] = await response.json();
-        setAttendanceData(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        const data = await response.json();
+        setAttendanceData(data.detailedAttendance.sort((a: AttendanceRecord, b: AttendanceRecord) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       } catch (err) {
         setError((err as Error).message);
       } finally {

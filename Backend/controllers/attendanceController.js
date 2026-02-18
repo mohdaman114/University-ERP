@@ -15,7 +15,11 @@ const getStudentAttendance = asyncHandler(async (req, res) => {
     throw new Error('Student not found');
   }
 
-  const attendanceRecords = await Attendance.find({ studentId: student._id }).populate('markedBy', 'name');
+  const attendanceRecords = await Attendance.find({ studentId: student._id });
+
+  let totalClasses = attendanceRecords.length;
+  let presentClasses = attendanceRecords.filter(record => record.status === 'present').length;
+  let attendancePercentage = totalClasses > 0 ? (presentClasses / totalClasses) * 100 : 0;
 
   // Process attendance records to ensure subject names are displayed
   const processedAttendance = await Promise.all(attendanceRecords.map(async (record) => {
@@ -32,7 +36,10 @@ const getStudentAttendance = asyncHandler(async (req, res) => {
     return recordObj;
   }));
 
-  res.json(processedAttendance);
+  res.json({
+    overallAttendancePercentage: parseFloat(attendancePercentage.toFixed(2)),
+    detailedAttendance: processedAttendance
+  });
 });
 
 module.exports = {

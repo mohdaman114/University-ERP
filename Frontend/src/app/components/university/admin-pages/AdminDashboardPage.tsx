@@ -29,7 +29,7 @@ export function AdminDashboardPage() {
     { name: 'Students', value: users.filter(u => u.role === 'student').length },
     { name: 'Faculty', value: users.filter(u => u.role === 'faculty').length },
     { name: 'Admin', value: users.filter(u => u.role === 'admin' || u.role === 'super_admin').length },
-    { name: 'Other Staff', value: users.filter(u => ['examination', 'accounts', 'library', 'support'].includes(u.role)).length },
+    { name: 'Other Staff', value: users.filter(u => ['examiner', 'accounts', 'library', 'support'].includes(u.role)).length },
   ];
 
   const revenuePercentage = (analytics.totalRevenue / (analytics.totalRevenue + analytics.pendingFees)) * 100;

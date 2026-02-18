@@ -6,7 +6,6 @@ import { StudentDashboardPage } from '@/app/components/university/student-pages/
 import { AttendancePage } from '@/app/components/university/student-pages/AttendancePage';
 import { ResultsPage } from '@/app/components/university/student-pages/ResultsPage';
 import { TimetablePage } from '@/app/components/university/student-pages/TimetablePage';
-import { ExaminationsPage } from '@/app/components/university/student-pages/ExaminationsPage';
 import { FeesPage } from '@/app/components/university/student-pages/FeesPage';
 import { NoticePage } from '@/app/components/university/student-pages/NoticePage';
 import { ProfilePage } from '@/app/components/university/student-pages/ProfilePage';
@@ -38,7 +37,6 @@ export function StudentDashboard({ currentPage }: { currentPage: string }) {
       {currentPage === 'attendance' && <AttendancePage />}
       {currentPage === 'results' && <ResultsPage />}
       {currentPage === 'timetable' && <TimetablePage />}
-      {currentPage === 'examinations' && <ExaminationsPage />}
       {currentPage === 'fees' && <FeesPage />}
         {currentPage === 'notice' && <NoticePage />}
         {currentPage === 'profile' && <ProfilePage />}

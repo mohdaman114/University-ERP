@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, Progress, Ta
 
 interface SubjectResult {
   subject: string;
-  marks: number;
+  internal: number;
+  external: number;
   grade: string;
   status: 'Pass' | 'Fail';
 }
@@ -26,29 +27,45 @@ export function ResultsPage() {
 
   useEffect(() => {
     const fetchResults = async () => {
-      if (!user) {
-        setError('User not authenticated.');
+      const token = localStorage.getItem('jwt_token');
+      console.log('Fetching results - JWT Token:', token);
+      if (!token) {
+        // Handle case where token is not found, e.g., redirect to login
+        setError('Authentication token not found. Please log in.');
         setIsLoading(false);
         return;
       }
       try {
-        const response = await authenticatedFetch(`/api/students/${user.id}/results`);
+        const response = await fetch('/api/results', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }); 
         if (!response.ok) {
-          throw new Error('Failed to fetch results data.');
+            // Check if 404 - might mean no results yet, or student not found
+            if (response.status === 404) {
+                 setSemesterResults([]); // Treat as empty results
+                 return;
+            }
+            throw new Error('Failed to fetch results data.');
         }
-        const data: SemesterResult[] = await response.json();
+        const data = await response.json();
+        // Transform data if necessary or ensure it matches the interface
+        // The backend should return data matching SemesterResult[]
         setSemesterResults(data);
-        if (data.length > 0) {
-          setCurrentSemesterIndex(data.length - 1); // Set to the latest semester by default
+        if (data && data.length > 0) {
+            setCurrentSemesterIndex(data.length - 1);
         }
-      } catch (err) {
-        setError((err as Error).message);
+      } catch (err: any) {
+        console.error("Error fetching results:", err);
+        setError(err.message || 'An error occurred');
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchResults();
-  }, [user, authenticatedFetch]);
+  }, []);
 
   const currentSemester = semesterResults ? semesterResults[currentSemesterIndex] : null;
 
@@ -91,7 +108,7 @@ export function ResultsPage() {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 text-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Results Overview</h2>
-        <p>No results found.</p>
+        <p className="text-xl text-gray-600 dark:text-gray-400 mt-10">Result will be declared soon</p>
       </motion.div>
     );
   }
@@ -136,7 +153,8 @@ export function ResultsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Subject</TableHead>
-                  <TableHead>Marks</TableHead>
+                  <TableHead>Internal (Total: 40)</TableHead>
+                  <TableHead>External (Total: 60)</TableHead>
                   <TableHead>Grade</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
@@ -145,7 +163,8 @@ export function ResultsPage() {
                 {currentSemester.subjects.map((sub, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{sub.subject}</TableCell>
-                    <TableCell>{sub.marks}</TableCell>
+                    <TableCell>Obtained Marks: {sub.internal}</TableCell>
+                    <TableCell>Obtained Marks: {sub.external}</TableCell>
                     <TableCell>{sub.grade}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${

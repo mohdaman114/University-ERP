@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const resultSchema = mongoose.Schema(
   {
-    studentId: {
+    student: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: 'Student',
@@ -12,24 +12,55 @@ const resultSchema = mongoose.Schema(
       required: true,
     },
     subject: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: 'Subject',
     },
-    score: {
+    internal: {
+    type: Number,
+    default: 0,
+  },
+  external: {
+    type: Number,
+    default: 0,
+  },
+    total: {
       type: Number,
-      required: true,
+      default: 0,
     },
     grade: {
       type: String,
       required: true,
     },
+    examiner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Examiner',
+    }
   },
   {
     timestamps: true,
   }
 );
 
+// Calculate total before saving
+resultSchema.pre('save', async function () {
+  this.total = this.internal + this.external;
+
+  if (this.total >= 90) {
+    this.grade = 'A+';
+  } else if (this.total >= 80) {
+    this.grade = 'A';
+  } else if (this.total >= 70) {
+    this.grade = 'B';
+  } else if (this.total >= 60) {
+    this.grade = 'C';
+  } else if (this.total >= 50) {
+    this.grade = 'D';
+  } else {
+    this.grade = 'F';
+  }
+});
+
 const Result = mongoose.model('Result', resultSchema);
 
 module.exports = Result;
-// Results will be managed by admin/exam module in future

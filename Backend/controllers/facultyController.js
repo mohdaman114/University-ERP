@@ -164,7 +164,17 @@ const updateFacultyPassword = asyncHandler(async (req, res) => {
 });
 
 const getAllStudentsForFaculty = asyncHandler(async (req, res) => {
-  const students = await Student.find({}).populate('user', 'name email');
+  const { semester, year } = req.query;
+  const filter = {};
+
+  if (semester) {
+    filter.currentSemester = parseInt(semester);
+  }
+  if (year) {
+    filter.admissionYear = parseInt(year);
+  }
+
+  const students = await Student.find(filter).populate('user', 'name email');
   
   // Format the response to include branch and semester directly
   const formattedStudents = students.map(student => {

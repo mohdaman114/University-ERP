@@ -19,7 +19,7 @@ export const LoginPage = () => {
     { label: 'Faculty', email: 'faculty@example.com', password: 'password', value: 'faculty' },
     { label: 'Admin', email: 'admin@example.com', password: 'password', value: 'admin' },
     { label: 'Super Admin', email: 'superadmin@example.com', password: 'password', value: 'super_admin' },
-    { label: 'Examination', email: 'examination@example.com', password: 'password', value: 'examination' },
+    { label: 'Examiner', email: 'examiner@example.com', password: 'password', value: 'examiner' },
     { label: 'Accounts', email: 'accounts@example.com', password: 'password', value: 'accountant' },
     { label: 'Library', email: 'library@example.com', password: 'password', value: 'library' },
   ];
@@ -179,7 +179,7 @@ export const LoginPage = () => {
                         <SelectItem value="faculty">Faculty</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="super_admin">Super Admin</SelectItem>
-                        <SelectItem value="examination">Examination</SelectItem>
+                        <SelectItem value="examiner">Examiner</SelectItem>
                         <SelectItem value="accountant">Accounts</SelectItem>
                         <SelectItem value="library">Library</SelectItem>
                       </SelectContent>

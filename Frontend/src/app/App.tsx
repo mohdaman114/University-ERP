@@ -9,14 +9,15 @@ import { AdminDashboardPage } from '@/app/components/university/admin-pages/Admi
 import { StudentManagementPage } from '@/app/components/university/admin-pages/StudentManagementPage';
 import { FacultyManagementPage } from '@/app/components/university/admin-pages/FacultyManagementPage';
 import { AccountantManagementPage } from '@/app/components/university/admin-pages/AccountantManagementPage';
+import { ExaminerManagementPage } from '@/app/components/university/admin-pages/ExaminerManagementPage';
 import { NoticeManagementPage } from '@/app/components/university/admin-pages/NoticeManagementPage';
 import { AdminTimetableManagementPage } from '@/app/components/university/admin-pages/AdminTimetableManagementPage';
 import CourseManagementPage from '@/app/components/university/admin-pages/CourseManagementPage';
 import { AdminProfilePage } from '@/app/components/university/admin-pages/AdminProfilePage';
 import { FacultyDashboard } from '@/app/components/university/FacultyDashboard';
+import { ExaminerDashboard } from '@/app/components/university/ExaminerDashboard';
 import { AccountantDashboard } from '@/app/components/university/accountant-pages/AccountantDashboard';
 import {
-  ExaminationDashboard,
   LibraryDashboard,
 } from '@/app/components/university/OtherDashboards';
 import { AIChatbox } from '@/app/components/AIChatbox';
@@ -120,6 +121,9 @@ function ERPSystem() {
         if (currentPage === 'accountants') {
           return <AccountantManagementPage />;
         }
+        if (currentPage === 'examiners') {
+          return <ExaminerManagementPage />;
+        }
         if (currentPage === 'notices') {
           return <NoticeManagementPage />;
         }
@@ -146,8 +150,8 @@ function ERPSystem() {
       case 'faculty':
         return <FacultyDashboard currentPage={currentPage} />;
 
-      case 'examination':
-        return <ExaminationDashboard />;
+      case 'examiner':
+        return <ExaminerDashboard currentPage={currentPage} />;
 
       case 'accountant':
         return <AccountantDashboard currentPage={currentPage} />;
