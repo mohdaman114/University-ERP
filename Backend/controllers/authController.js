@@ -6,21 +6,27 @@ const User = require('../models/User');
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-  console.log('➡️ Student Login Route Hit');
   const { email, password, role } = req.body;
-  console.log('Login attempt with:', { email, password, role });
+  console.log(`[Login Attempt] User: ${email}, Role: ${role || 'N/A'}`);
 
   // Check for user email
   const user = await User.findOne({ email });
-  console.log('User found:', user ? user.email : 'None');
 
-  if (user && (await user.matchPassword(password))) {
-    // Check if the provided role matches the user's role
-    if (role && user.role !== role) {
-      res.status(401);
-      throw new Error('Role mismatch. Please select the correct role.');
-    }
-    console.log('Password matched for user:', user.email);
+  if (!user) {
+    console.log(`[Login Failed] User not found for email: ${email}`);
+    res.status(401);
+    throw new Error('Invalid credentials');
+  }
+
+  // Check if the provided role matches the user's role
+  if (role && user.role !== role) {
+    console.log(`[Login Failed] Role mismatch for user ${email}. Expected: ${role}, Actual: ${user.role}`);
+    res.status(401);
+    throw new Error(`Role mismatch. Please select the correct role (${user.role}).`);
+  }
+
+  if (await user.matchPassword(password)) {
+    console.log(`[Login Success] User ${email} (${user.role}) logged in.`);
     res.json({
       success: true,
       token: generateToken(user._id),
@@ -32,8 +38,9 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
   } else {
+    console.log(`[Login Failed] Invalid password for user: ${email}`);
     res.status(401);
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid credentials');
   }
 });
 

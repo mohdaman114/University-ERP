@@ -10,7 +10,7 @@ const Faculty = require('./models/Faculty');
 const Accountant = require('./models/Accountant');
 const connectDB = require('./config/db');
 
-dotenv.config({ path: './Erp System/Backend/.env' });
+dotenv.config();
 
 const importData = async () => {
   try {
