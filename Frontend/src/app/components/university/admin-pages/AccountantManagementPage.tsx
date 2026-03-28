@@ -71,6 +71,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export function AccountantManagementPage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const [accountants, setAccountants] = useState<Accountant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +87,7 @@ export function AccountantManagementPage() {
   const fetchAccountants = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/accountants', {
+      const response = await fetch(`${API_BASE}/api/admin/accountants`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }
@@ -136,8 +137,8 @@ export function AccountantManagementPage() {
     try {
       setIsSubmitting(true);
       const url = editingAccountant 
-        ? `/api/admin/accountants/${editingAccountant.accountantId || editingAccountant._id}` 
-        : '/api/admin/accountants';
+        ? `${API_BASE}/api/admin/accountants/${editingAccountant.accountantId || editingAccountant._id}` 
+        : `${API_BASE}/api/admin/accountants`;
       
       const method = editingAccountant ? 'PUT' : 'POST';
       
@@ -170,7 +171,7 @@ export function AccountantManagementPage() {
     if (!window.confirm('Are you sure you want to delete this accountant?')) return;
 
     try {
-      const response = await fetch(`/api/admin/accountants/${accountantId || id}`, {
+      const response = await fetch(`${API_BASE}/api/admin/accountants/${accountantId || id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`

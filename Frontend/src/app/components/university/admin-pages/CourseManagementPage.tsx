@@ -62,6 +62,7 @@ const INITIAL_FORM_STATE: {
   courseType: '',
 };
 
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
 const CourseManagementPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +83,7 @@ const CourseManagementPage = () => {
     try {
       setIsLoading(true);
       setIsError(false);
-      const response = await fetch(`/api/admin/courses?keyword=${keyword}`, {
+      const response = await fetch(`${API_BASE}/api/admin/courses?keyword=${keyword}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }

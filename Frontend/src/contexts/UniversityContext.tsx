@@ -96,11 +96,12 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
     totalAccountant: 0,
     totalBooks: 0, // Added missing property
   });
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
 
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch(`${API_BASE}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -118,7 +119,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchNotices = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/notices', {
+      const response = await fetch(`${API_BASE}/api/admin/notices`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -142,7 +143,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchStudents = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/students', {
+      const response = await fetch(`${API_BASE}/api/admin/students`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -161,7 +162,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchFaculty = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/faculty', {
+      const response = await fetch(`${API_BASE}/api/admin/faculty`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -179,7 +180,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchAccountants = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/accountants', {
+      const response = await fetch(`${API_BASE}/api/admin/accountants`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -198,7 +199,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchDepartments = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/departments', { // Assuming a /api/admin/departments endpoint
+      const response = await fetch(`${API_BASE}/api/admin/departments`, { // Assuming a /api/admin/departments endpoint
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -217,7 +218,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchCourses = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/courses', { // Assuming a /api/admin/courses endpoint
+      const response = await fetch(`${API_BASE}/api/admin/courses`, { // Assuming a /api/admin/courses endpoint
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -236,7 +237,7 @@ export function UniversityProvider({ children }: { children: React.ReactNode }) 
   const fetchBooks = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/books', { // Assuming a /api/admin/books endpoint
+      const response = await fetch(`${API_BASE}/api/admin/books`, { // Assuming a /api/admin/books endpoint
         headers: {
           'Authorization': `Bearer ${token}`
         }

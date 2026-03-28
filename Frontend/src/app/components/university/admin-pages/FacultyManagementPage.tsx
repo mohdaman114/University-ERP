@@ -71,6 +71,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export function FacultyManagementPage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +88,7 @@ export function FacultyManagementPage() {
   const fetchFaculty = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/faculty', {
+      const response = await fetch(`${API_BASE}/api/admin/faculty`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }
@@ -137,8 +138,8 @@ export function FacultyManagementPage() {
     try {
       setIsSubmitting(true);
       const url = editingFaculty 
-        ? `/api/admin/faculty/${editingFaculty.facultyId || editingFaculty._id}` 
-        : '/api/admin/faculty';
+        ? `${API_BASE}/api/admin/faculty/${editingFaculty.facultyId || editingFaculty._id}` 
+        : `${API_BASE}/api/admin/faculty`;
       
       const method = editingFaculty ? 'PUT' : 'POST';
       
@@ -171,7 +172,7 @@ export function FacultyManagementPage() {
     if (!window.confirm('Are you sure you want to delete this faculty member?')) return;
 
     try {
-      const response = await fetch(`/api/admin/faculty/${facultyId || id}`, {
+      const response = await fetch(`${API_BASE}/api/admin/faculty/${facultyId || id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`

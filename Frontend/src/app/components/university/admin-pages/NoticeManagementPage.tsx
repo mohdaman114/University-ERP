@@ -50,6 +50,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export function NoticeManagementPage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +66,7 @@ export function NoticeManagementPage() {
   const fetchNotices = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/notices', {
+      const response = await fetch(`${API_BASE}/api/admin/notices`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }
@@ -113,8 +114,8 @@ export function NoticeManagementPage() {
     try {
       setIsSubmitting(true);
       const url = editingNotice 
-        ? `/api/admin/notices/${editingNotice._id}` 
-        : '/api/admin/notices';
+        ? `${API_BASE}/api/admin/notices/${editingNotice._id}` 
+        : `${API_BASE}/api/admin/notices`;
       
       const method = editingNotice ? 'PUT' : 'POST';
       
@@ -147,7 +148,7 @@ export function NoticeManagementPage() {
     if (!window.confirm('Are you sure you want to delete this notice?')) return;
 
     try {
-      const response = await fetch(`/api/admin/notices/${id}`, {
+      const response = await fetch(`${API_BASE}/api/admin/notices/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`

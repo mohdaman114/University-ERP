@@ -17,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const navigate = useNavigate();
+    const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
 
   useEffect(() => {
     // Check for stored user session
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string, role?: UserRole): Promise<boolean> => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    return fetch(input, { ...init, headers });
+    let url: string | URL = input as any;
+    if (typeof input === 'string') {
+      url = input.startsWith('http') ? input : `${API_BASE}${input}`;
+    } else if (input instanceof URL) {
+      url = input.toString();
+    }
+
+    return fetch(url, { ...init, headers });
   };
 
   return (

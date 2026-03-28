@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export const AdminProfilePage = () => {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const { user, updateUser } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -27,7 +28,7 @@ export const AdminProfilePage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/profile', {
+      const response = await fetch(`${API_BASE}/api/admin/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +70,7 @@ export const AdminProfilePage = () => {
 
     try {
       const token = localStorage.getItem('jwt_token');
-      const response = await fetch('/api/admin/change-password', {
+      const response = await fetch(`${API_BASE}/api/admin/change-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

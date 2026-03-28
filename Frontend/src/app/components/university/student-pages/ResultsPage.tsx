@@ -19,6 +19,7 @@ interface SemesterResult {
 }
 
 export function ResultsPage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const { user, authenticatedFetch } = useAuth();
   const [semesterResults, setSemesterResults] = useState<SemesterResult[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +37,7 @@ export function ResultsPage() {
         return;
       }
       try {
-        const response = await fetch('/api/results', {
+        const response = await fetch(`${API_BASE}/api/results`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

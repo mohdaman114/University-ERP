@@ -72,6 +72,7 @@ const INITIAL_FORM_STATE: ExaminerFormData = {
 };
 
 export function ExaminerManagementPage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const [examiners, setExaminers] = useState<Examiner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,7 +89,7 @@ export function ExaminerManagementPage() {
   const fetchExaminers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/examiners', {
+      const response = await fetch(`${API_BASE}/api/examiners`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
         }
@@ -138,8 +139,8 @@ export function ExaminerManagementPage() {
     try {
       setIsSubmitting(true);
       const url = editingExaminer 
-        ? `/api/examiners/${editingExaminer._id}` 
-        : '/api/examiners';
+        ? `${API_BASE}/api/examiners/${editingExaminer._id}` 
+        : `${API_BASE}/api/examiners`;
       
       const method = editingExaminer ? 'PUT' : 'POST';
       
@@ -178,7 +179,7 @@ export function ExaminerManagementPage() {
     if (!window.confirm('Are you sure you want to delete this examiner?')) return;
 
     try {
-      const response = await fetch(`/api/examiners/${id}`, {
+      const response = await fetch(`${API_BASE}/api/examiners/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`

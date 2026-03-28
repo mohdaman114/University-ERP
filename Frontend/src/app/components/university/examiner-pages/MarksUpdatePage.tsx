@@ -41,6 +41,7 @@ interface MarksData {
 }
 
 export function MarksUpdatePage() {
+  const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
   const [students, setStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string>('');
@@ -71,7 +72,7 @@ export function MarksUpdatePage() {
         return;
       }
       try {
-        const response = await fetch('/api/examiner-portal/students', {
+        const response = await fetch(`${API_BASE}/api/examiner-portal/students`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -96,7 +97,7 @@ export function MarksUpdatePage() {
         return;
       }
       try {
-        const response = await fetch('/api/examiner-portal/subjects', {
+        const response = await fetch(`${API_BASE}/api/examiner-portal/subjects`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -125,7 +126,7 @@ export function MarksUpdatePage() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/examiner-portal/marks/${selectedStudent}/${selectedSubject}`, {
+      const response = await fetch(`${API_BASE}/api/examiner-portal/marks/${selectedStudent}/${selectedSubject}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -173,7 +174,7 @@ export function MarksUpdatePage() {
             marks: marks[selectedTerm] // Send only the marks for the selected term
           };
           console.log('Sending marks update request with data:', dataToSend);
-          const response = await fetch('/api/examiner-portal/marks', {
+          const response = await fetch(`${API_BASE}/api/examiner-portal/marks`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
