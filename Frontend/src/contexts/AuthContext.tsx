@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User, UserRole } from '@/types/university';
 import { mockUsers } from '@/data/mockData';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -17,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const navigate = useNavigate();
-    const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com';
+    const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://backend-erp-nez2.onrender.com/api';
 
   useEffect(() => {
     // Check for stored user session
@@ -49,9 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        // Handle HTTP errors
         const errorData = await response.json();
         console.error('Login failed:', errorData.message);
+        toast.error(errorData.message || 'Login failed. Please try again.');
         return false;
       }
 
