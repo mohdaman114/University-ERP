@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
   Search,
@@ -10,7 +10,11 @@ import {
   Phone,
   X,
   Save,
-  Loader2
+  Loader2,
+  GraduationCap,
+  MapPin,
+  Calendar,
+  UserCircle
 } from 'lucide-react';
 
 import {
@@ -31,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogContent, // Added DialogContent
   Label
 } from './AdminUI';
 
@@ -91,7 +96,6 @@ export function StudentManagementPage() {
     fetchStudents(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
-  // ✅ FIXED FETCH
   const fetchStudents = async (keyword = '') => {
     try {
       setIsLoading(true);
@@ -109,7 +113,7 @@ export function StudentManagementPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setStudents(data);
+        setStudents(Array.isArray(data) ? data : []);
       } else {
         toast.error(data.message || 'Failed to fetch students');
         setIsError(true);
@@ -128,7 +132,7 @@ export function StudentManagementPage() {
       setFormData({
         ...INITIAL_FORM_STATE,
         ...student,
-        password: '',
+        password: '', // Password kept empty on edit for security
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toISOString().split('T')[0]
           : ''
@@ -146,29 +150,35 @@ export function StudentManagementPage() {
     setFormData(INITIAL_FORM_STATE);
   };
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]:
         name === 'currentSemester' || name === 'admissionYear'
-          ? parseInt(value)
+          ? parseInt(value) || 0
           : value
     }));
   };
 
-  // ✅ FIXED CREATE / UPDATE
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       setIsSubmitting(true);
 
+      // Construct URL: Use MongoDB _id for specific endpoint targeting if studentId isn't reliable
       const url = editingStudent
-        ? `${BASE_URL}/api/admin/students/${editingStudent.studentId || editingStudent._id}`
+        ? `${BASE_URL}/api/admin/students/${editingStudent._id}`
         : `${BASE_URL}/api/admin/students`;
 
       const method = editingStudent ? 'PUT' : 'POST';
+
+      // Clean payload: If editing, don't send empty password
+      const payload = { ...formData };
+      if (editingStudent && !payload.password) {
+        delete (payload as any).password;
+      }
 
       const response = await fetch(url, {
         method,
@@ -176,7 +186,7 @@ export function StudentManagementPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -199,13 +209,12 @@ export function StudentManagementPage() {
     }
   };
 
-  // ✅ FIXED DELETE
-  const handleDelete = async (id: string, studentId: string) => {
-    if (!window.confirm('Are you sure you want to delete this student?')) return;
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this student? This action cannot be undone.')) return;
 
     try {
       const response = await fetch(
-        `${BASE_URL}/api/admin/students/${studentId || id}`,
+        `${BASE_URL}/api/admin/students/${id}`,
         {
           method: 'DELETE',
           headers: {
@@ -227,7 +236,7 @@ export function StudentManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -247,80 +256,226 @@ export function StudentManagementPage() {
 
       <Card>
         <CardHeader>
-          <Input
-            placeholder="Search students..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              className="pl-10"
+              placeholder="Search by name, ID, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </CardHeader>
 
         <CardContent>
           {isLoading ? (
-            <Loader2 className="animate-spin" />
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
           ) : isError ? (
-            <div className="text-center text-red-500">Error loading students</div>
+            <div className="text-center py-10 text-destructive bg-destructive/10 rounded-lg">
+              <p className="font-medium">Error loading students. Please check your connection.</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => fetchStudents()}>
+                Retry
+              </Button>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student Info</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {students.length === 0 ? (
+            <div className="rounded-md border overflow-hidden">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
-                      No students found
-                    </TableCell>
+                    <TableHead>Student Info</TableHead>
+                    <TableHead>Academic Details</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : (
-                  students.map((student) => (
-                    <TableRow key={student._id}>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span>{student.name}</span>
-                          <span className="text-xs">{student.studentId}</span>
-                        </div>
-                      </TableCell>
+                </TableHeader>
 
-                      <TableCell>
-                        {student.course} ({student.branch})
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex flex-col text-xs">
-                          <span>{student.email}</span>
-                          {student.phoneNumber && (
-                            <span>{student.phoneNumber}</span>
-                          )}
-                        </div>
-                      </TableCell>
-
-                      <TableCell>
-                        <Button onClick={() => handleOpenDialog(student)}>
-                          <Edit2 />
-                        </Button>
-
-                        <Button
-                          onClick={() =>
-                            handleDelete(student._id, student.studentId)
-                          }
-                        >
-                          <Trash2 />
-                        </Button>
+                <TableBody>
+                  {students.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center">
+                        No students found.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    students.map((student) => (
+                      <TableRow key={student._id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <UserCircle className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{student.name}</span>
+                              <span className="text-xs text-muted-foreground">ID: {student.studentId}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium">{student.course}</span>
+                            <span className="text-xs text-muted-foreground">{student.branch} | Sem {student.currentSemester}</span>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex flex-col text-xs gap-1">
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" /> {student.email}
+                            </span>
+                            {student.phoneNumber && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" /> {student.phoneNumber}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleOpenDialog(student)}
+                            >
+                              <Edit2 className="w-4 h-4 text-blue-600" />
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(student._id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* ✅ CORRECTED DIALOG STRUCTURE */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {editingStudent ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+              {editingStudent ? 'Edit Student Profile' : 'Register New Student'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-6 py-4">
+            {/* Personal Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">{editingStudent ? 'Change Password (Optional)' : 'Password'}</Label>
+                <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required={!editingStudent} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="studentId">Student ID</Label>
+                <Input id="studentId" name="studentId" value={formData.studentId} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
+                <Input id="enrollmentNumber" name="enrollmentNumber" value={formData.enrollmentNumber} onChange={handleInputChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
+              </div>
+            </div>
+
+            {/* Academic & Bio */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="course">Course</Label>
+                <Input id="course" name="course" value={formData.course} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="branch">Branch</Label>
+                <Input id="branch" name="branch" value={formData.branch} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="currentSemester">Current Semester</Label>
+                <Input id="currentSemester" name="currentSemester" type="number" min="1" max="12" value={formData.currentSemester} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admissionYear">Admission Year</Label>
+                <Input id="admissionYear" name="admissionYear" type="number" value={formData.admissionYear} onChange={handleInputChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <select 
+                  id="gender" 
+                  name="gender" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                  value={formData.gender} 
+                  onChange={handleInputChange}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input id="dateOfBirth" name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleInputChange} />
+              </div>
+              <div className="md:col-span-2 space-y-2">
+                <Label htmlFor="address">Full Address</Label>
+                <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
+              </div>
+            </div>
+
+            {/* Guardian Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="parentName">Guardian Name</Label>
+                <Input id="parentName" name="parentName" value={formData.parentName} onChange={handleInputChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="parentPhoneNumber">Guardian Phone</Label>
+                <Input id="parentPhoneNumber" name="parentPhoneNumber" value={formData.parentPhoneNumber} onChange={handleInputChange} />
+              </div>
+            </div>
+
+            <DialogFooter className="pt-6 border-t gap-2">
+              <Button type="button" variant="outline" onClick={handleCloseDialog} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {editingStudent ? 'Update Student' : 'Register Student'}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
