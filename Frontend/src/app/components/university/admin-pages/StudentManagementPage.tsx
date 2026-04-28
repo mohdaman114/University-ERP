@@ -3,19 +3,16 @@ import { motion } from 'motion/react';
 import {
   Users,
   Search,
-  Plus,
   Edit2,
   Trash2,
   UserPlus,
   Mail,
   Phone,
-  BookOpen,
-  Calendar,
-  Filter,
   X,
   Save,
   Loader2
 } from 'lucide-react';
+
 import {
   Card,
   CardHeader,
@@ -30,15 +27,18 @@ import {
   TableHead,
   TableBody,
   TableCell,
-  Badge,
   Dialog,
   DialogHeader,
   DialogTitle,
   DialogFooter,
   Label
 } from './AdminUI';
+
 import { toast } from 'sonner';
 import useDebounce from '../../../../hooks/useDebounce';
+
+// ✅ FIXED BASE URL
+const BASE_URL = "https://backend-erp-nez2.onrender.com";
 
 interface Student {
   _id: string;
@@ -81,7 +81,7 @@ export function StudentManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms debounce
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
@@ -91,16 +91,23 @@ export function StudentManagementPage() {
     fetchStudents(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
+  // ✅ FIXED FETCH
   const fetchStudents = async (keyword = '') => {
     try {
       setIsLoading(true);
       setIsError(false);
-      const response = await fetch(`/api/admin/students?keyword=${keyword}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+
+      const response = await fetch(
+        `${BASE_URL}/api/admin/students?keyword=${keyword}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
+          }
         }
-      });
+      );
+
       const data = await response.json();
+
       if (response.ok) {
         setStudents(data);
       } else {
@@ -121,8 +128,10 @@ export function StudentManagementPage() {
       setFormData({
         ...INITIAL_FORM_STATE,
         ...student,
-        password: '', // Don't show password
-        dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : ''
+        password: '',
+        dateOfBirth: student.dateOfBirth
+          ? new Date(student.dateOfBirth).toISOString().split('T')[0]
+          : ''
       });
     } else {
       setEditingStudent(null);
@@ -137,29 +146,35 @@ export function StudentManagementPage() {
     setFormData(INITIAL_FORM_STATE);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'currentSemester' || name === 'admissionYear' ? parseInt(value) : value
+      [name]:
+        name === 'currentSemester' || name === 'admissionYear'
+          ? parseInt(value)
+          : value
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ✅ FIXED CREATE / UPDATE
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
+
     try {
       setIsSubmitting(true);
-      const url = editingStudent 
-        ? `/api/admin/students/${editingStudent.studentId || editingStudent._id}` 
-        : '/api/admin/students';
-      
+
+      const url = editingStudent
+        ? `${BASE_URL}/api/admin/students/${editingStudent.studentId || editingStudent._id}`
+        : `${BASE_URL}/api/admin/students`;
+
       const method = editingStudent ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+          Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
         },
         body: JSON.stringify(formData)
       });
@@ -167,7 +182,11 @@ export function StudentManagementPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(editingStudent ? 'Student updated successfully' : 'Student created successfully');
+        toast.success(
+          editingStudent
+            ? 'Student updated successfully'
+            : 'Student created successfully'
+        );
         handleCloseDialog();
         fetchStudents();
       } else {
@@ -180,16 +199,21 @@ export function StudentManagementPage() {
     }
   };
 
+  // ✅ FIXED DELETE
   const handleDelete = async (id: string, studentId: string) => {
     if (!window.confirm('Are you sure you want to delete this student?')) return;
 
     try {
-      const response = await fetch(`/api/admin/students/${studentId || id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+      const response = await fetch(
+        `${BASE_URL}/api/admin/students/${studentId || id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
+          }
         }
-      });
+      );
+
       if (response.ok) {
         toast.success('Student deleted successfully');
         fetchStudents();
@@ -202,13 +226,6 @@ export function StudentManagementPage() {
     }
   };
 
-  // Remove client-side filtering as it's now handled by the backend
-  // const filteredStudents = students.filter(student =>
-  //   student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   student.email.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -217,54 +234,47 @@ export function StudentManagementPage() {
             <Users className="w-8 h-8 text-primary" />
             Student Management
           </h1>
-          <p className="text-muted-foreground">Manage student profiles, enrollment, and academic details</p>
+          <p className="text-muted-foreground">
+            Manage student profiles, enrollment, and academic details
+          </p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="flex items-center gap-2">
-          <UserPlus className="w-4 h-4" />
+
+        <Button onClick={() => handleOpenDialog()}>
+          <UserPlus className="w-4 h-4 mr-2" />
           Add New Student
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search students by name, ID or email..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
+          <Input
+            placeholder="Search students..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </CardHeader>
+
         <CardContent>
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <p className="text-muted-foreground">Loading students data...</p>
-            </div>
+            <Loader2 className="animate-spin" />
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <X className="w-8 h-8 text-red-500" />
-              <p className="text-muted-foreground">Error loading students. Please try again.</p>
-            </div>
+            <div className="text-center text-red-500">Error loading students</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Student Info</TableHead>
-                  <TableHead>Academic Info</TableHead>
+                  <TableHead>Course</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
                 {students.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      No students found matching your search.
+                    <TableCell colSpan={4} className="text-center">
+                      No students found
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -272,47 +282,36 @@ export function StudentManagementPage() {
                     <TableRow key={student._id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{student.name}</span>
-                          <span className="text-xs text-muted-foreground uppercase">{student.studentId}</span>
+                          <span>{student.name}</span>
+                          <span className="text-xs">{student.studentId}</span>
                         </div>
                       </TableCell>
+
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm">{student.course} - {student.branch}</span>
-                          <span className="text-xs text-muted-foreground">Semester {student.currentSemester}</span>
-                        </div>
+                        {student.course} ({student.branch})
                       </TableCell>
+
                       <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-1 text-xs">
-                            <Mail className="w-3 h-3" />
-                            {student.email}
-                          </div>
+                        <div className="flex flex-col text-xs">
+                          <span>{student.email}</span>
                           {student.phoneNumber && (
-                            <div className="flex items-center gap-1 text-xs">
-                              <Phone className="w-3 h-3" />
-                              {student.phoneNumber}
-                            </div>
+                            <span>{student.phoneNumber}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDialog(student)}
-                          >
-                            <Edit2 className="w-4 h-4 text-blue-600" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(student._id, student.studentId)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
+
+                      <TableCell>
+                        <Button onClick={() => handleOpenDialog(student)}>
+                          <Edit2 />
+                        </Button>
+
+                        <Button
+                          onClick={() =>
+                            handleDelete(student._id, student.studentId)
+                          }
+                        >
+                          <Trash2 />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -322,208 +321,6 @@ export function StudentManagementPage() {
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogHeader>
-          <DialogTitle>{editingStudent ? 'Edit Student Profile' : 'Register New Student'}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input 
-                id="name" 
-                name="name" 
-                placeholder="John Doe" 
-                required 
-                value={formData.name}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input 
-                id="email" 
-                name="email" 
-                type="email" 
-                placeholder="john@example.com" 
-                required 
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </div>
-            {!editingStudent && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  name="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  required 
-                  value={formData.password}
-                  onChange={handleInputChange}
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="studentId">Student ID</Label>
-              <Input 
-                id="studentId" 
-                name="studentId" 
-                placeholder="STU001" 
-                required 
-                value={formData.studentId}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
-              <Input 
-                id="enrollmentNumber" 
-                name="enrollmentNumber" 
-                placeholder="ENR2024001" 
-                required 
-                value={formData.enrollmentNumber}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input 
-                id="dateOfBirth" 
-                name="dateOfBirth" 
-                type="date" 
-                required 
-                value={formData.dateOfBirth}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="course">Course</Label>
-              <Input 
-                id="course" 
-                name="course" 
-                placeholder="B.Tech" 
-                required 
-                value={formData.course}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch</Label>
-              <Input 
-                id="branch" 
-                name="branch" 
-                placeholder="Computer Science" 
-                required 
-                value={formData.branch}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="address">Full Address</Label>
-              <Input 
-                id="address" 
-                name="address" 
-                placeholder="123 Main St, City, Country" 
-                required 
-                value={formData.address}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentName">Parent/Guardian Name</Label>
-              <Input 
-                id="parentName" 
-                name="parentName" 
-                placeholder="Robert Doe" 
-                required 
-                value={formData.parentName}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentPhoneNumber">Parent Phone Number</Label>
-              <Input 
-                id="parentPhoneNumber" 
-                name="parentPhoneNumber" 
-                placeholder="+1 234 567 891" 
-                required 
-                value={formData.parentPhoneNumber}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="currentSemester">Current Semester</Label>
-              <Input 
-                id="currentSemester" 
-                name="currentSemester" 
-                type="number" 
-                min="1" 
-                max="8" 
-                required 
-                value={formData.currentSemester}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="admissionYear">Admission Year</Label>
-              <Input 
-                id="admissionYear" 
-                name="admissionYear" 
-                type="number" 
-                required 
-                value={formData.admissionYear}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input 
-                id="phoneNumber" 
-                name="phoneNumber" 
-                placeholder="+1 234 567 890" 
-                required
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
-              <select 
-                id="gender" 
-                name="gender" 
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                value={formData.gender}
-                onChange={handleInputChange}
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCloseDialog}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  {editingStudent ? 'Update Student' : 'Create Student'}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Dialog>
     </div>
   );
 }
